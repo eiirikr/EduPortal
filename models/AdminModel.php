@@ -31,6 +31,7 @@ class AdminModel extends DatabaseINSCUSADMIN
 
         $sql = "SELECT TOP(50) 
                 UserID, 
+                StudentNo, 
                 AIFirstName, 
                 AILastName, 
                 AIEmail, 
@@ -54,6 +55,7 @@ class AdminModel extends DatabaseINSCUSADMIN
                     OR AIEmail LIKE ?
                     OR AIAddrs LIKE ?
                     OR cltcode LIKE ?
+                    OR StudentNo LIKE ?
                     OR School LIKE ? 
                     OR AccountType LIKE ?
                     OR 

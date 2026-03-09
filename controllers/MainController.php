@@ -101,7 +101,13 @@ class MainController
             if (empty($registry)) {
                 $errors[] = ['message' => 'Registry is required.', 'row' => $rowNum];
             } elseif (!preg_match("/^[A-Z]{3}[0-9]{4}-[0-9]{2}$/", $registry)) {
-                $errors[] = ['message' => 'Registry format is invalid. Must be like ABC1234-56.', 'row' => $rowNum];
+                if (preg_match("/^[A-Z]{5}[0-9]{4}-[0-9]{2}$/", $registry)) {
+                    
+                
+                }else{
+                    $errors[] = ['message' => 'Registry format is invalid. Must be like ABC1234-56.', 'row' => $rowNum];
+         
+                }
             }
 
             if (empty($port)) {

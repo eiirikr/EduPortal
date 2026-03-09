@@ -49,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $_GET['type'] === 'users') {
             <thead>
             <tr>
                 <th>SR Code</th>
+                <th>Student Number</th>
                 <th>Status</th>
                 <th>Email</th>
                 <th>First Name</th>
@@ -62,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $_GET['type'] === 'users') {
             <?php foreach ($usersUploadedData as $row): ?>
                 <tr>
                     <td><?= htmlspecialchars($row['cltcode']); ?></td>
+                    <td><?= htmlspecialchars($row['StudentNo']); ?></td>
                     <td><?= htmlspecialchars($row['Status']); ?></td>
                     <td><?= htmlspecialchars($row['AIEmail']); ?></td>
                     <td><?= htmlspecialchars($row['AIFirstName']); ?></td>
