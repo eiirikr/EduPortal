@@ -95,7 +95,12 @@ class AdminModel extends DatabaseINSCUSADMIN
 
         foreach ($rows as $index => $row) {
             $rowNumber = $index + 2;
-            list($cltcode, $first_name, $last_name, $address, $mobile, $email, $year, $section, $school, $account_type) = $row;
+            list($StudentNo, $first_name, $last_name, $address, $mobile, $email, $year, $section, $school, $account_type) = $row;
+
+            $StudentNo = preg_replace('/[^0-9]/', '', number_format($StudentNo, 0, '', ''));
+            $mobile    = preg_replace('/[^0-9]/', '', number_format($mobile, 0, '', ''));
+
+            $cltcode = $this->generateCltCode();
 
             if ($this->isExistingUser($email, $cltcode)) {
                 $results[] = [
@@ -133,9 +138,20 @@ class AdminModel extends DatabaseINSCUSADMIN
             }
 
             $registered = $this->insertRegistration(
-                $email, $encrypted_password, $database_name,
-                $first_name, $last_name, $address, $cltcode, $mobile, $year, $section, 
-                $school, $account_type, $role
+                $email,
+                $encrypted_password,
+                $database_name,
+                $first_name,
+                $last_name,
+                $address,
+                $cltcode,
+                $StudentNo,
+                $mobile,
+                $year,
+                $section,
+                $school,
+                $account_type,
+                $role
             );
 
             if ($registered) {
@@ -190,14 +206,14 @@ class AdminModel extends DatabaseINSCUSADMIN
         return !empty($exists);
     }
     // Added School and AccountType in inserRegistration
-    private function insertRegistration($email, $encrypted_password, $db_name, $fname, $lname, $addr, $cltcode, $mobile, $year, $section, $school, $account_type, $role)
+    private function insertRegistration($email, $encrypted_password, $db_name, $fname, $lname, $addr, $cltcode, $StudentNo, $mobile, $year, $section, $school, $account_type, $role)
     {
         $sql = "INSERT INTO Registration (
-                UserID, [Password], DatabaseName, AIFirstName, AILastName, AIAddrs, AIEmail, cltcode, MobileNO, Section, [Year], School, AccountType,
+                UserID, [Password], DatabaseName, AIFirstName, AILastName, AIAddrs, AIEmail, cltcode, StudentNo, MobileNO, Section, [Year], School, AccountType,
                 AICompany, AIDesignation,
                 Role, isPasswordTemp, [Status], ImpDecRights, Environment, AdminRights, ImpPermit, BOI_CAI, IC_DA,
                 AFAB, OLRS, ExpDecRights, InvoiceRights, BillingRights, ImporterRights, EpayRights, Emanifest, ProdFLAG
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         // Combine fname and lname for AICompany
         $ai_company = trim($fname . ' ' . $lname);
@@ -205,7 +221,7 @@ class AdminModel extends DatabaseINSCUSADMIN
 
         $params = array(
             $email, $encrypted_password, $db_name,              
-            $fname, $lname, $addr, $email, $cltcode, $mobile,   
+            $fname, $lname, $addr, $email, $cltcode, $StudentNo, $mobile,   
             $section, $year, $school, $account_type,                          
             $ai_company, 'BROKER',                              
             $role, 1, 1, 1, 1, 0, 0, 0, 0,                          
@@ -364,5 +380,27 @@ class AdminModel extends DatabaseINSCUSADMIN
         }
 
         return true;
+    }
+
+    private function generateCltCode()
+    {
+        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $length = 8;
+
+        do {
+            $code = '';
+            for ($i = 0; $i < $length; $i++) {
+                $code .= $characters[mt_rand(0, strlen($characters) - 1)];
+            }
+
+            $sql = "SELECT COUNT(*) AS total FROM Registration WHERE cltcode = ?";
+            $query = $this->db->query($sql, array($code));
+            $result = $query->row_array();
+
+            $exists = isset($result['total']) ? $result['total'] : 0;
+
+        } while ($exists > 0);
+
+        return $code;
     }
 }

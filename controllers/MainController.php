@@ -467,7 +467,7 @@ class MainController
         $headers = $headers[0];
         // Updated expected headers to include 'School, Account Type'
         $expected = array(
-            "SR Code", "First Name", "Last Name", "Address", "Mobile No.",
+            "Student Number", "First Name", "Last Name", "Address", "Mobile No.",
             "Email", "Year", "Section", "School", "Account Type"
         );
 
@@ -506,11 +506,11 @@ class MainController
                 $row[] = '';
             }
 
-            list($srCode, $firstName, $lastName, $address, $mobile, $email, $year, $section, $school, $account_type) = $row;
+            list($StudentNo, $firstName, $lastName, $address, $mobile, $email, $year, $section, $school, $account_type) = $row;
 
             // Row validation
-            if (empty($srCode)) {
-                $errors[] = ['message' => 'SR Code is required.', 'row' => $rowNum];
+            if (empty($StudentNo)) {
+                $errors[] = ['message' => 'Student Number is required.', 'row' => $rowNum];
             }
             if (empty($firstName)) {
                 $errors[] = ['message' => 'First Name is required.', 'row' => $rowNum];
