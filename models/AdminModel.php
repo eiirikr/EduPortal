@@ -97,8 +97,8 @@ class AdminModel extends DatabaseINSCUSADMIN
             $rowNumber = $index + 2;
             list($StudentNo, $first_name, $last_name, $address, $mobile, $email, $year, $section, $school, $account_type) = $row;
 
-            $StudentNo = preg_replace('/[^0-9]/', '', number_format($StudentNo, 0, '', ''));
-            $mobile    = preg_replace('/[^0-9]/', '', number_format($mobile, 0, '', ''));
+            $StudentNo = trim((string)$StudentNo);
+            $mobile    = preg_replace('/[^0-9]/', '', (string)$mobile);
 
             $cltcode = $this->generateCltCode();
 
@@ -394,10 +394,9 @@ class AdminModel extends DatabaseINSCUSADMIN
             }
 
             $sql = "SELECT COUNT(*) AS total FROM Registration WHERE cltcode = ?";
-            $query = $this->db->query($sql, array($code));
-            $result = $query->row_array();
+            $result = $this->db->select($sql, array($code));
 
-            $exists = isset($result['total']) ? $result['total'] : 0;
+            $exists = isset($result[0]['total']) ? $result[0]['total'] : 0;
 
         } while ($exists > 0);
 
