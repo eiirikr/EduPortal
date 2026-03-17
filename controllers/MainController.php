@@ -170,7 +170,9 @@ class MainController
             return;
         }
 
-        $duplicateErrors = $this->model->saveUploadedRows($rows);
+        $result = $this->model->saveUploadedRows($rows);
+        $duplicateErrors = $result['errors'];
+        $insertedRegNos = isset($result['inserted']) ? $result['inserted'] : [];
 
         if (!empty($duplicateErrors)) {
             echo json_encode([
@@ -180,11 +182,28 @@ class MainController
             ]);
             return;
         } else {
-            echo json_encode([
-                'status' => 'success',
-                'message' => 'Upload successful!',
-                'rows' => count($rows)
-            ]);
+            $tsCreated = 0;
+            $insertedRegNos = array_unique($insertedRegNos);
+            foreach ($insertedRegNos as $regNo) {
+                if ($this->model->generateTSForRegNo($regNo)) {
+                    $tsCreated++;
+                }
+            }
+
+            $response = [
+                'status' => empty($duplicateErrors) ? 'success' : 'partial',
+                'message' => empty($duplicateErrors)
+                    ? 'Upload successful!'
+                    : 'Upload partially successful. Some duplicates found.',
+                'rows' => count($rows),
+                'ts_generated' => $tsCreated
+            ];
+
+            if (!empty($duplicateErrors)) {
+                $response['errors'] = $duplicateErrors;
+            }
+
+            echo json_encode($response);
             return;
         }
     }

@@ -28,7 +28,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // Handle UPLOAD
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'upload' && isset($_POST['type']) && $_POST['type'] === 'bol') {
     $controller->uploadExcel();
-    $controller->generateTS();
     exit;
 }
 
@@ -39,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
 
     header('Content-Type: application/json');
 
-    $controller->generateTS();
+    $controller->generateTS(); 
     exit;
 }
 
