@@ -25,6 +25,16 @@ class MainController
         $this->e2m_model   = new E2MDataModel();
     }
 
+    public function generateTS()
+    {
+        $result = $this->model->generateTSManifest();
+
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'TS Manifest generated successfully'
+        ]);
+    }
+
     public function checkApplication($applno)
     {
         return $this->model->applicationExists($applno);

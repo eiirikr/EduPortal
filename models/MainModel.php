@@ -469,4 +469,102 @@ class MainModel extends Database
 
         return isset($result[0]['rul_cod']) ? $result[0]['rul_cod'] : '';
     }
+
+    public function generateTSManifest()
+    {
+        // 1. Get qualified records
+        $sql = "SELECT RegNo 
+                FROM TBLIMPAPL_MASTER 
+                WHERE Mdec2 = 8 AND Stat = 'AP'";
+
+        $records = $this->db->select($sql);
+
+        if (empty($records)) {
+            return [];
+        }
+
+        foreach ($records as $rec) {
+
+            $regNo = $rec['RegNo'];
+
+            // 2. CHECK: already has TS?
+            $checkTS = $this->db->select(
+                "SELECT registry FROM bol_manifest WHERE original_registry = ?", 
+                [$regNo]
+            );
+
+            if (!empty($checkTS)) {
+                continue; // already generated → skip
+            }
+
+            // 3. Get original record
+            $original = $this->db->select(
+                "SELECT * FROM bol_manifest WHERE registry = ?", 
+                [$regNo]
+            );
+
+            if (empty($original)) {
+                continue;
+            }
+
+            foreach ($original as $row) {
+
+                // 4. Generate TS
+                $newRegistry = $this->generateUniqueTSRegistry();
+
+                // 5. Insert TS record (linked)
+                $insertSql = "
+                    INSERT INTO bol_manifest (
+                        registry,
+                        original_registry,
+                        port,
+                        blno,
+                        bl_nature,
+                        pl_destination,
+                        package_no,
+                        package_type,
+                        gross_weight,
+                        created_by
+                    )
+                    VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?)
+                ";
+
+                $params = [
+                    $newRegistry,        // TS000001
+                    $regNo,              // ORIGINAL LINK
+                    $row['blno'],
+                    $row['bl_nature'],
+                    $row['pl_destination'],
+                    $row['package_no'],
+                    $row['package_type'],
+                    $row['gross_weight'],
+                    'system'
+                ];
+
+                $this->db->insert($insertSql, $params);
+            }
+        }
+
+        return true;
+    }
+
+    private function generateUniqueTSRegistry()
+    {
+        $sql = "SELECT TOP 1 registry 
+                FROM bol_manifest 
+                WHERE registry LIKE 'TS%' 
+                ORDER BY registry DESC";
+
+        $result = $this->db->select($sql);
+
+        if (empty($result)) {
+            return 'TS000001';
+        }
+
+        $last = $result[0]['registry'];
+        $num  = (int)substr($last, 2);
+        $new  = 'TS' . str_pad($num + 1, 6, '0', STR_PAD_LEFT);
+
+        return $new;
+    }
 }
