@@ -47,8 +47,11 @@ class MainController
         $tsRegistry = 'TS' . $row['registry'];
         $tsExists   = $this->model->getBOLData($tsRegistry);
 
+        $mdec2 = isset($row['Mdec2']) ? (int)$row['Mdec2'] : null;
+        $stat  = isset($row['Stat']) ? strtoupper($row['Stat']) : '';
+
         // Condition: Mdec2 = 8 AND Stat = AP
-        if ((int)$row['Mdec2'] === 8 && strtoupper($row['Stat']) === 'AP') {
+        if ($mdec2 === 8 && $stat === 'AP') {
             $tsRow = $row;
             $tsRow['registry'] = $tsRegistry;
             $tsRow['port'] = '';  // TS row port is empty

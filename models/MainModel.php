@@ -471,7 +471,7 @@ class MainModel extends Database
         $hs6_cod = substr($hscode, 0, 6);
         $tar_pr1 = substr($hscode, 6, 8);
 
-        $sql = "SELECT rul_cod FROM GBTARTAB WHRE hs6_cod = ? AND tar_pr1 = ? AND tar_pr2 = ?";
+        $sql = "SELECT rul_cod FROM GBTARTAB WHERE hs6_cod = ? AND tar_pr1 = ? AND tar_pr2 = ?";
 
         $result = $this->db->select($sql, [$hs6_cod, $tar_pr1, $hscode_tar]);
 
@@ -560,7 +560,14 @@ class MainModel extends Database
 
     public function getBOLData($registry)
     {
-        return $this->db->where('registry', $registry)->get('bol_manifest')->row_array();
+        $sql = "SELECT * FROM bol_manifest WHERE registry = ?";
+        $result = $this->db->select($sql, array($registry));
+
+        if (!empty($result)) {
+            return $result[0];
+        }
+
+        return null;
     }
 
     public function insertTSRow($data)
