@@ -478,29 +478,9 @@ class MainModel extends Database
         return isset($result[0]['rul_cod']) ? $result[0]['rul_cod'] : '';
     }
 
-    private function generateUniqueTSRegistry()
-    {
-        $sql = "SELECT TOP 1 registry 
-                FROM bol_manifest 
-                WHERE registry LIKE 'TS%' 
-                ORDER BY registry DESC";
-
-        $result = $this->db->select($sql);
-
-        if (empty($result)) {
-            return 'TS000001';
-        }
-
-        $last = $result[0]['registry'];
-        $num  = (int)substr($last, 2);
-        $new  = 'TS' . str_pad($num + 1, 6, '0', STR_PAD_LEFT);
-
-        return $new;
-    }
-
     public function generateTSForRegNo($regNo)
     {
-        // 1. Check if qualified (Mdec2 = 8 and AP)
+        // Check if qualified (Mdec2 = 8 and AP)
         $check = $this->db->select(
             "SELECT RegNo 
             FROM TBLIMPAPL_MASTER 
@@ -512,19 +492,21 @@ class MainModel extends Database
             return false;
         }
 
-        // 2. Prevent duplicate TS
+        $tsRegistry = 'TS' . $regNo;
+
+        // Prevent duplicate TS
         $existing = $this->db->select(
             "SELECT registry 
             FROM bol_manifest 
-            WHERE original_registry = ?",
-            [$regNo]
+            WHERE registry = ?",
+            [$tsRegistry]
         );
 
         if (!empty($existing)) {
             return false;
         }
 
-        // 3. Get original BOL records
+        // Get original BOL records
         $original = $this->db->select(
             "SELECT * 
             FROM bol_manifest 
@@ -536,10 +518,7 @@ class MainModel extends Database
             return false;
         }
 
-        // 4. Generate TS registry
-        $tsRegistry = $this->generateUniqueTSRegistry();
-
-        // 5. Insert TS records
+        // Insert TS records
         foreach ($original as $row) {
 
             $insertSql = "
@@ -552,27 +531,45 @@ class MainModel extends Database
                     package_no,
                     package_type,
                     gross_weight,
-                    created_by,
-                    original_registry
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    created_by
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ";
 
             $params = [
                 $tsRegistry, // NEW TS registry
-                $row['port'],
+                "",
                 $row['blno'],
                 $row['bl_nature'],
                 $row['pl_destination'],
                 $row['package_no'],
                 $row['package_type'],
                 $row['gross_weight'],
-                'system-ts',
-                $regNo // LINK to original
+                'system-ts'
             ];
 
             $this->db->insert($insertSql, $params);
         }
 
         return true;
+    }
+
+    public function getAllBOLRows()
+    {
+        return $this->db->select('*')->from('bol_manifest')->get()->result_array();
+    }
+
+    public function getBOLData($registry)
+    {
+        return $this->db->where('registry', $registry)->get('bol_manifest')->row_array();
+    }
+
+    public function insertTSRow($data)
+    {
+        return $this->db->insert('bol_manifest', $data);
+    }
+
+    public function updateTSRow($registry, $data)
+    {
+        return $this->db->where('registry', $registry)->update('bol_manifest', $data);
     }
 }

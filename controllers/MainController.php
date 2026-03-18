@@ -27,12 +27,40 @@ class MainController
 
     public function generateTS()
     {
-        $result = $this->model->generateTSManifest();
+        // Fetch all recently inserted/updated BOL rows
+        $bolRows = $this->model->getAllBOLRows();
+
+        $tsCreated = 0;
+        foreach ($bolRows as $row) {
+            $this->syncTSRow($row, $tsCreated);
+        }
 
         echo json_encode([
             'status' => 'success',
-            'message' => 'TS Manifest generated successfully'
+            'message' => "TS Manifest synced successfully",
+            'ts_generated' => $tsCreated
         ]);
+    }
+
+    private function syncTSRow($row, &$tsCreated)
+    {
+        $tsRegistry = 'TS' . $row['registry'];
+        $tsExists   = $this->model->getBOLData($tsRegistry);
+
+        // Condition: Mdec2 = 8 AND Stat = AP
+        if ((int)$row['Mdec2'] === 8 && strtoupper($row['Stat']) === 'AP') {
+            $tsRow = $row;
+            $tsRow['registry'] = $tsRegistry;
+            $tsRow['port'] = '';  // TS row port is empty
+            unset($tsRow['id']);  // Remove original ID for insert
+
+            if ($tsExists) {
+                $this->model->updateTSRow($tsRegistry, $tsRow);
+            } else {
+                $this->model->insertTSRow($tsRow);
+                $tsCreated++;
+            }
+        }
     }
 
     public function checkApplication($applno)
@@ -204,20 +232,21 @@ class MainController
             }
 
             echo json_encode($response);
-            return;
+        }
+
+        // Sync TS rows dynamically for all inserted/updated BOLs
+        $tsCreated = 0;
+        foreach ($insertedRegNos as $regNo) {
+            $rowData = $this->model->getBOLData($regNo);
+            if ($rowData) {
+                $this->syncTSRow($rowData, $tsCreated);
+            }
         }
     }
 
-    function isRowEmpty($row)
-    {
-        if (empty($row)) {
-            return false;
-        }
-
+    function isRowEmpty($row) {
         foreach ($row as $cell) {
-            if (trim((string)$cell) !== '') {
-                return false;
-            }
+            if (isset($cell) && trim((string)$cell) !== '') return false;
         }
         return true;
     }
