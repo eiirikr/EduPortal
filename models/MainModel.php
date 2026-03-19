@@ -555,7 +555,12 @@ class MainModel extends Database
 
     public function getAllBOLRows()
     {
-        return $this->db->select('*')->from('bol_manifest')->get()->result_array();
+        $sql = "SELECT bm.*, m.MDec, m.Mdec2, m.Stat
+                FROM bol_manifest bm
+                LEFT JOIN TBLIMPAPL_MASTER m
+                    ON bm.registry = m.RegNo";
+
+        return $this->db->select($sql);
     }
 
     public function getBOLData($registry)
@@ -578,5 +583,18 @@ class MainModel extends Database
     public function updateTSRow($registry, $data)
     {
         return $this->db->where('registry', $registry)->update('bol_manifest', $data);
+    }
+
+    public function isWarehouseReferenceUsed($registry, $blno, $port)
+    {
+        $sql = "SELECT COUNT(*) as cnt
+                FROM bol_manifest
+                WHERE registry = ?
+                AND blno = ?
+                AND port = ?";
+
+        $result = $this->db->select($sql, [$registry, $blno, $port]);
+
+        return isset($result[0]['cnt']) && $result[0]['cnt'] > 0;
     }
 }

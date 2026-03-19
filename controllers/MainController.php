@@ -47,16 +47,29 @@ class MainController
         $tsRegistry = 'TS' . $row['registry'];
         $tsExists   = $this->model->getBOLData($tsRegistry);
 
-        $mdec = isset($row['Mdec']) ? strtoupper($row['Mdec']) : null;
+        $mdec  = isset($row['Mdec']) ? strtoupper(trim($row['Mdec'])) : '';
         $mdec2 = isset($row['Mdec2']) ? (int)$row['Mdec2'] : null;
-        $stat  = isset($row['Stat']) ? strtoupper($row['Stat']) : '';
+        $stat  = isset($row['Stat']) ? strtoupper(trim($row['Stat'])) : '';
 
-        // Condition: Mdec = 8PP AND Mdec2 = 8 AND Stat = AP
+        $registry = isset($row['registry']) ? $row['registry'] : '';
+        $blno     = isset($row['blno']) ? $row['blno'] : '';
+        $port     = isset($row['port']) ? $row['port'] : '';
+
+        // VALIDATION
+        $exists = $this->model->isWarehouseReferenceUsed($registry, $blno, $port);
+
+        if ($exists && !$this->isWarehousingMode($mdec)) {
+            // Skip invalid reference usage
+            return;
+        }
+
+        // Condition: 8PP-8 AND AP
         if ($mdec === '8PP' && $mdec2 === 8 && $stat === 'AP') {
+
             $tsRow = $row;
             $tsRow['registry'] = $tsRegistry;
-            $tsRow['port'] = '';  // TS row port is empty
-            unset($tsRow['id']);  // Remove original ID for insert
+            $tsRow['port'] = ''; // per CRF: port must be blank
+            unset($tsRow['id']); // remove PK
 
             if ($tsExists) {
                 $this->model->updateTSRow($tsRegistry, $tsRow);
@@ -65,6 +78,13 @@ class MainController
                 $tsCreated++;
             }
         }
+    }
+
+    private function isWarehousingMode($mdec)
+    {
+        $allowed = ['7', '7EO', '7T', '7TE', '7TO', '7W'];
+
+        return in_array(strtoupper(trim($mdec)), $allowed);
     }
 
     public function checkApplication($applno)
@@ -139,6 +159,16 @@ class MainController
 
             // Basic validation per field (customize as needed)
             list($registry, $port, $blno, $blNature, $destination, $packCount, $packageType, $grossWeight) = $row;
+
+            $mdec = isset($row['Mdec']) ? strtoupper(trim($row['Mdec'])) : '';
+            $exists = $this->model->isWarehouseReferenceUsed($registry, $blno, $port);
+
+            if ($exists && !$this->isWarehousingMode($mdec)) {
+                $errors[] = [
+                    'message' => 'Invalid reference details. The selected Registry Number, BL, and Port are exclusive to Warehouse Entry transactions and cannot be used for this application.',
+                    'row' => $rowNum
+                ];
+            }
 
             if (empty($registry)) {
                 $errors[] = ['message' => 'Registry is required.', 'row' => $rowNum];
@@ -235,16 +265,16 @@ class MainController
                 $response['errors'] = $duplicateErrors;
             }
 
-            echo json_encode($response);
-        }
-
-        // Sync TS rows dynamically for all inserted/updated BOLs
-        $tsCreated = 0;
-        foreach ($insertedRegNos as $regNo) {
-            $rowData = $this->model->getBOLData($regNo);
-            if ($rowData) {
-                $this->syncTSRow($rowData, $tsCreated);
+            // Sync TS rows dynamically for all inserted/updated BOLs
+            $tsCreated = 0;
+            foreach ($insertedRegNos as $regNo) {
+                $rowData = $this->model->getBOLData($regNo);
+                if ($rowData) {
+                    $this->syncTSRow($rowData, $tsCreated);
+                }
             }
+
+            echo json_encode($response);
         }
     }
 
