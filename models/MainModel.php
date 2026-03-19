@@ -480,11 +480,11 @@ class MainModel extends Database
 
     public function generateTSForRegNo($regNo)
     {
-        // Check if qualified (Mdec2 = 8 and AP)
+        // Check if qualified (8PP-8 and AP)
         $check = $this->db->select(
             "SELECT RegNo 
             FROM TBLIMPAPL_MASTER 
-            WHERE RegNo = ? AND Mdec2 = 8 AND Stat = 'AP'",
+            WHERE RegNo = ? AND Mdec = 8PP AND Mdec2 = 8 AND Stat = 'AP'",
             [$regNo]
         );
 
