@@ -602,7 +602,10 @@ class MainController
             if (empty($mobile) || !preg_match('/^[0-9]{7,15}$/', $mobile)) {
                 $errors[] = ['message' => 'Mobile No. must be numeric and at least 7 digits.', 'row' => $rowNum];
             }
-            if (empty($email) || !filter_var(trim($email), FILTER_VALIDATE_EMAIL)) {
+            if (strlen($email) > 75) {
+                $errors[] = [
+                    'message' => 'Email must not exceed 75 characters.', 'row' => $rowNum];
+            } elseif (empty($email) || !filter_var(trim($email), FILTER_VALIDATE_EMAIL)) {
                 $errors[] = ['message' => 'Invalid Email format.', 'row' => $rowNum];
             }
             if (empty($year)) {
