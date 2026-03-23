@@ -47,29 +47,16 @@ class MainController
         $tsRegistry = 'TS' . $row['registry'];
         $tsExists   = $this->model->getBOLData($tsRegistry);
 
-        $mdec  = isset($row['Mdec']) ? strtoupper(trim($row['Mdec'])) : '';
+        $mdec = isset($row['Mdec']) ? strtoupper($row['Mdec']) : '';
         $mdec2 = isset($row['Mdec2']) ? (int)$row['Mdec2'] : null;
-        $stat  = isset($row['Stat']) ? strtoupper(trim($row['Stat'])) : '';
+        $stat  = isset($row['Stat']) ? strtoupper($row['Stat']) : '';
 
-        $registry = isset($row['registry']) ? $row['registry'] : '';
-        $blno     = isset($row['blno']) ? $row['blno'] : '';
-        $port     = isset($row['port']) ? $row['port'] : '';
-
-        // VALIDATION
-        $exists = $this->model->isWarehouseReferenceUsed($registry, $blno, $port);
-
-        if ($exists && !$this->isWarehousingMode($mdec)) {
-            // Skip invalid reference usage
-            return;
-        }
-
-        // Condition: 8PP-8 AND AP
+        // Condition: Mdec = 8PP AND Mdec2 = 8 AND Stat = AP
         if ($mdec === '8PP' && $mdec2 === 8 && $stat === 'AP') {
-
             $tsRow = $row;
             $tsRow['registry'] = $tsRegistry;
-            $tsRow['port'] = ''; // per CRF: port must be blank
-            unset($tsRow['id']); // remove PK
+            $tsRow['port'] = '';  // TS row port is empty
+            unset($tsRow['id']);  // Remove original ID for insert
 
             if ($tsExists) {
                 $this->model->updateTSRow($tsRegistry, $tsRow);
@@ -78,13 +65,6 @@ class MainController
                 $tsCreated++;
             }
         }
-    }
-
-    private function isWarehousingMode($mdec)
-    {
-        $allowed = ['7', '7EO', '7T', '7TE', '7TO', '7W'];
-
-        return in_array(strtoupper(trim($mdec)), $allowed);
     }
 
     public function checkApplication($applno)
@@ -157,18 +137,8 @@ class MainController
                 $row[] = '';
             }
 
-            // Basic validation per field (customize as needed)
+            // Basic validation per field
             list($registry, $port, $blno, $blNature, $destination, $packCount, $packageType, $grossWeight) = $row;
-
-            $mdec = isset($row['Mdec']) ? strtoupper(trim($row['Mdec'])) : '';
-            $exists = $this->model->isWarehouseReferenceUsed($registry, $blno, $port);
-
-            if ($exists && !$this->isWarehousingMode($mdec)) {
-                $errors[] = [
-                    'message' => 'Invalid reference details. The selected Registry Number, BL, and Port are exclusive to Warehouse Entry transactions and cannot be used for this application.',
-                    'row' => $rowNum
-                ];
-            }
 
             if (empty($registry)) {
                 $errors[] = ['message' => 'Registry is required.', 'row' => $rowNum];
@@ -265,16 +235,16 @@ class MainController
                 $response['errors'] = $duplicateErrors;
             }
 
-            // Sync TS rows dynamically for all inserted/updated BOLs
-            $tsCreated = 0;
-            foreach ($insertedRegNos as $regNo) {
-                $rowData = $this->model->getBOLData($regNo);
-                if ($rowData) {
-                    $this->syncTSRow($rowData, $tsCreated);
-                }
-            }
-
             echo json_encode($response);
+        }
+
+        // Sync TS rows dynamically for all inserted/updated BOLs
+        $tsCreated = 0;
+        foreach ($insertedRegNos as $regNo) {
+            $rowData = $this->model->getBOLData($regNo);
+            if ($rowData) {
+                $this->syncTSRow($rowData, $tsCreated);
+            }
         }
     }
 
@@ -327,6 +297,22 @@ class MainController
             isset($data['master']) ? $data['master'] : array(),
             isset($data['fin']) ? $data['fin'] : array()
         );
+
+        // TS Registry validation
+        $registry = isset($baseData['Manifest']) ? trim($baseData['Manifest']) : '';
+        $mdec2    = isset($data['master']['Mdec2']) ? strtoupper(trim($data['master']['Mdec2'])) : '';
+
+        // If registry starts with TS, only allow for MDEC2 = 7
+        if (preg_match('/^TS/i', $registry)) {
+            if ($mdec2 !== '7') {
+                $errors[] = [
+                    'item'       => 1,
+                    'field'      => 'registry_no',
+                    'error_code' => 1200,
+                    'error_desc' => 'Invalid reference details. The selected Registry Number, BL, and Port are exclusive to Warehouse Entry transactions and cannot be used for this application.'
+                ];
+            }
+        }
 
         foreach ($rules as $rule) {
             $field    = $rule['field'];
