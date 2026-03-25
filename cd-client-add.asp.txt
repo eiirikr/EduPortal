@@ -157,15 +157,26 @@ elseif Action = " Save " then
 		rsAddExporter.LockType = 3
 		rsAddExporter.Open
 		rsAddExporter_numRows = 0
-		
-		set rsAddExporter2 = Server.CreateObject("ADODB.Recordset")
-		rsAddExporter2.ActiveConnection = constrCOMINScd
-		rsAddExporter2.Source = Insertuncmptab
-		rsAddExporter2.CursorType = 0
-		rsAddExporter2.CursorLocation = 2
-		rsAddExporter2.LockType = 3
-		rsAddExporter2.Open
-		rsAddExporter2_numRows = 0
+
+    <!-- jjavier START -->
+    Set rsCheckTIN = Server.CreateObject("ADODB.Recordset")
+    rsCheckTIN.ActiveConnection = constrCOMINScd
+    rsCheckTIN.Source = "SELECT CONTIN FROM uncmptab WHERE CONTIN='" & iExp_TIN & "'"
+    rsCheckTIN.Open
+
+    If rsCheckTIN.EOF Then
+        set rsAddExporter2 = Server.CreateObject("ADODB.Recordset")
+        rsAddExporter2.ActiveConnection = constrCOMINScd
+        rsAddExporter2.Source = Insertuncmptab
+        rsAddExporter2.CursorType = 0
+        rsAddExporter2.CursorLocation = 2
+        rsAddExporter2.LockType = 3
+        rsAddExporter2.Open
+    Else
+    End If
+
+    rsCheckTIN.Close
+		<!-- jjavier END -->
 		
 		set rsCWSEXPORTERChangesLogs = Server.CreateObject("ADODB.Recordset")
 		rsCWSEXPORTERChangesLogs.ActiveConnection = constrCOMINScd  
