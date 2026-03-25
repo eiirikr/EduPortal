@@ -1,0 +1,682 @@
+<%@LANGUAGE="VBSCRIPT"%>
+<!--#include file="../../Connections/constrTIMcomins.asp" -->
+<%
+
+Function EncryptPassword(strPassword)
+  strPassword=ucase(trim(strPassword))
+  for i = 1 to len(strPassword)
+     EncryptPassword = EncryptPassword & chr(asc(mid(strPassword,i,1))+100)
+  next
+End Function
+
+Function DecryptPassword(strPassword)
+  strPassword=ucase(trim(strPassword))
+  for i = 1 to len(strPassword)
+     DecryptPassword = DecryptPassword & chr(asc(mid(strPassword,i,1))-100)
+  next
+End Function
+
+MM_DB = Session("db")
+
+MM_redirectPage = "cd-client.asp?cn=" & EncryptPassword(CStr(MM_DB))
+
+iExp_code = request.Form("txtCode")
+iExp_name = request.Form("txtName")
+iExp_TIN = request.Form("txtTIN")
+iExp_adr1 = request.Form("txtAddress1")
+iExp_adr2 = request.Form("txtAddress2")
+iExp_adr3 = request.Form("txtAddress3")
+iExp_adr4 = request.Form("txtAddress4")
+iPrePAcct = request.Form("txtPrepAcct")
+iExpDUNS = request.Form("txtDUNS")
+iExpContactPerson = request.Form("txtContact")
+iExpMail = request.Form("txtEmail")
+iExpPlantFaxNo = request.Form("txtFax")
+iExpPlantTelNo = request.Form("txtTel")
+iExpPlantCityName = request.Form("txtNameOfCity")
+iExpPlantCoCode = request.Form("txtCountryCode")
+iExpPlantZipcode = request.Form("txtZip")
+iExpPlantRegion = request.Form("txtRegion")
+
+If UCASE(session("cltcode")) = "ASPACA" OR UCASE(session("cltcode")) = "JCAA" OR UCASE(session("cltcode")) = "BABANTAOA" OR UCASE(session("cltcode")) = "RSECOBARA" OR UCASE(session("cltcode")) = "ABARCEBALA" OR UCASE(session("cltcode")) = "GPARNALAA" OR UCASE(session("cltcode")) = "APTUVILLOA" OR UCASE(session("cltcode")) = "JLEONARA" OR UCASE(session("cltcode")) = "JPAULMIA" OR UCASE(session("cltcode")) = "GPIEDADA" Then
+	isAspacClient = "YES"
+else
+	isAspacClient = "NO"
+End If
+
+if UCASE(Session("CLTCODE")) = "FEDEX" or UCASE(Session("CLTCODE")) = "DHLEXA" or isAspacClient = "YES" then
+    iZoneCode = request.Form("lstZoneCode")	
+end if
+
+AddButton = request.Form("btnAdd")
+Action = request.Form("btnAction")
+
+intError = 0
+Session("intError") = 0
+
+if Action = " Verify " then
+    Set rsSearchTIN = Server.CreateObject("ADODB.Recordset")
+	rsSearchTIN.ActiveConnection = constrCOMINScd  
+	rsSearchTIN.Source = "SELECT * FROM dbo.uncmptab WHERE CONTIN='" & iExp_TIN & "'"
+	
+	rsSearchTIN.CursorType = 0
+	rsSearchTIN.CursorLocation = 2
+	rsSearchTIN.LockType = 3
+	rsSearchTIN.Open()
+	rsSearchTIN_numRows = 0
+
+    if not rsSearchTIN.EOF then
+        name = rsSearchTIN.Fields.Item("CONNAME")
+        address1 = rsSearchTIN.Fields.Item("CONADDR1")
+        address2 = rsSearchTIN.Fields.Item("CONADDR2")
+        address3 = rsSearchTIN.Fields.Item("CONADDR3")
+        address4 = rsSearchTIN.Fields.Item("CONCTY")
+        telno = rsSearchTIN.Fields.Item("CONTEL")
+        fax = rsSearchTIN.Fields.Item("CONFAX")
+        rsSearchTIN.Close()
+    end if
+
+elseif Action = " Save " then
+    
+	Set rstUser = Server.CreateObject("ADODB.Recordset")
+	rstUser.ActiveConnection = constrCOMINScd  
+	rstUser.Source = "SELECT exp_code FROM CWSEXPORTER WHERE exp_code = '" & Request.form("txtCode") & "'"
+	rstUser.CursorType = 0
+	rstUser.CursorLocation = 2
+	rstUser.LockType = 3
+	rstUser.Open()
+	rstUser_numRows = 0
+	
+	If len(LTrim(RTrim(Request.form("txtCode")))) = 4 then
+		interror = 3
+		Session("intError") = 3
+		
+		If right(Request.form("txtCode"),1) <> "0" AND right(Request.form("txtCode"),1) <> "1" AND right(Request.form("txtCode"),1) <> "2" AND right(Request.form("txtCode"),1) <> "Y" then
+			interror = 8
+			Session("intError") = 8
+		else
+			interror = 6
+			Session("intError") = 6
+		end if
+		
+		If (mid(Request.form("txtCode"), 1, 1) = "A" or mid(Request.form("txtCode"), 1, 1) = "B" or mid(Request.form("txtCode"), 1, 1) = "C" or mid(Request.form("txtCode"), 1, 1) = "D" or mid(Request.form("txtCode"), 1, 1) = "E" or mid(Request.form("txtCode"), 1, 1) = "F" or mid(Request.form("txtCode"), 1, 1) = "G" or mid(Request.form("txtCode"), 1, 1) = "H" or mid(Request.form("txtCode"), 1, 1) = "I" or mid(Request.form("txtCode"), 1, 1) = "J" or mid(Request.form("txtCode"), 1, 1) = "K" or mid(Request.form("txtCode"), 1, 1) = "L" or mid(Request.form("txtCode"), 1, 1) = "M" or mid(Request.form("txtCode"), 1, 1) = "N" or mid(Request.form("txtCode"), 1, 1) = "O" or mid(Request.form("txtCode"), 1, 1) = "P" or mid(Request.form("txtCode"), 1, 1) = "Q" or mid(Request.form("txtCode"), 1, 1) = "R" or mid(Request.form("txtCode"), 1, 1) = "S" or mid(Request.form("txtCode"), 1, 1) = "T" or mid(Request.form("txtCode"), 1, 1) = "U" or mid(Request.form("txtCode"), 1, 1) = "V" or mid(Request.form("txtCode"), 1, 1) = "W" or mid(Request.form("txtCode"), 1, 1) = "X" or mid(Request.form("txtCode"), 1, 1) = "Y" or mid(Request.form("txtCode"), 1, 1) = "Z") AND (mid(Request.form("txtCode"), 2, 1) = "A" or mid(Request.form("txtCode"), 2, 1) = "B" or mid(Request.form("txtCode"), 2, 1) = "C" or mid(Request.form("txtCode"), 2, 1) = "D" or mid(Request.form("txtCode"), 2, 1) = "E" or mid(Request.form("txtCode"), 2, 1) = "F" or mid(Request.form("txtCode"), 2, 1) = "G" or mid(Request.form("txtCode"), 2, 1) = "H" or mid(Request.form("txtCode"), 2, 1) = "I" or mid(Request.form("txtCode"), 2, 1) = "J" or mid(Request.form("txtCode"), 2, 1) = "K" or mid(Request.form("txtCode"), 2, 1) = "L" or mid(Request.form("txtCode"), 2, 1) = "M" or mid(Request.form("txtCode"), 2, 1) = "N" or mid(Request.form("txtCode"), 2, 1) = "O" or mid(Request.form("txtCode"), 2, 1) = "P" or mid(Request.form("txtCode"), 2, 1) = "Q" or mid(Request.form("txtCode"), 2, 1) = "R" or mid(Request.form("txtCode"), 2, 1) = "S" or mid(Request.form("txtCode"), 2, 1) = "T" or mid(Request.form("txtCode"), 2, 1) = "U" or mid(Request.form("txtCode"), 2, 1) = "V" or mid(Request.form("txtCode"), 2, 1) = "W" or mid(Request.form("txtCode"), 2, 1) = "X" or mid(Request.form("txtCode"), 2, 1) = "Y" or mid(Request.form("txtCode"), 2, 1) = "Z") AND (mid(Request.form("txtCode"), 3, 1) = "A" or mid(Request.form("txtCode"), 3, 1) = "B" or mid(Request.form("txtCode"), 3, 1) = "C" or mid(Request.form("txtCode"), 3, 1) = "D" or mid(Request.form("txtCode"), 3, 1) = "E" or mid(Request.form("txtCode"), 3, 1) = "F" or mid(Request.form("txtCode"), 3, 1) = "G" or mid(Request.form("txtCode"), 3, 1) = "H" or mid(Request.form("txtCode"), 3, 1) = "I" or mid(Request.form("txtCode"), 3, 1) = "J" or mid(Request.form("txtCode"), 3, 1) = "K" or mid(Request.form("txtCode"), 3, 1) = "L" or mid(Request.form("txtCode"), 3, 1) = "M" or mid(Request.form("txtCode"), 3, 1) = "N" or mid(Request.form("txtCode"), 3, 1) = "O" or mid(Request.form("txtCode"), 3, 1) = "P" or mid(Request.form("txtCode"), 3, 1) = "Q" or mid(Request.form("txtCode"), 3, 1) = "R" or mid(Request.form("txtCode"), 3, 1) = "S" or mid(Request.form("txtCode"), 3, 1) = "T" or mid(Request.form("txtCode"), 3, 1) = "U" or mid(Request.form("txtCode"), 3, 1) = "V" or mid(Request.form("txtCode"), 3, 1) = "W" or mid(Request.form("txtCode"), 3, 1) = "X" or mid(Request.form("txtCode"), 3, 1) = "Y" or mid(Request.form("txtCode"), 3, 1) = "Z") AND (mid(Request.form("txtCode"), 4, 1) = "A" or mid(Request.form("txtCode"), 4, 1) = "B" or mid(Request.form("txtCode"), 4, 1) = "C" or mid(Request.form("txtCode"), 4, 1) = "D" or mid(Request.form("txtCode"), 4, 1) = "E" or mid(Request.form("txtCode"), 4, 1) = "F" or mid(Request.form("txtCode"), 4, 1) = "G" or mid(Request.form("txtCode"), 4, 1) = "H" or mid(Request.form("txtCode"), 4, 1) = "I" or mid(Request.form("txtCode"), 4, 1) = "J" or mid(Request.form("txtCode"), 4, 1) = "K" or mid(Request.form("txtCode"), 4, 1) = "L" or mid(Request.form("txtCode"), 4, 1) = "M" or mid(Request.form("txtCode"), 4, 1) = "N" or mid(Request.form("txtCode"), 4, 1) = "O" or mid(Request.form("txtCode"), 4, 1) = "P" or mid(Request.form("txtCode"), 4, 1) = "Q" or mid(Request.form("txtCode"), 4, 1) = "R" or mid(Request.form("txtCode"), 4, 1) = "S" or mid(Request.form("txtCode"), 4, 1) = "T" or mid(Request.form("txtCode"), 4, 1) = "U" or mid(Request.form("txtCode"), 4, 1) = "V" or mid(Request.form("txtCode"), 4, 1) = "W" or mid(Request.form("txtCode"), 4, 1) = "X" or mid(Request.form("txtCode"), 4, 1) = "Y" or mid(Request.form("txtCode"), 4, 1) = "Z") OR (IsNumeric(mid(Request.form("txtCode"), 1, 1)) = True) OR (IsNumeric(mid(Request.form("txtCode"), 2, 1)) = True) OR (IsNumeric(mid(Request.form("txtCode"), 3, 1)) = True) OR (IsNumeric(mid(Request.form("txtCode"), 4, 1)) = True) then
+			interror = 9
+			Session("intError") = 9
+		else
+            
+			interror = 7
+			Session("intError") = 7
+		end if
+	else
+		interror = 5
+		Session("intError") = 5
+	end if
+	
+	If right(Request.form("txtCode"),1) <> "0" AND right(Request.form("txtCode"),1) <> "1" AND right(Request.form("txtCode"),1) <> "2" AND right(Request.form("txtCode"),1) <> "Y" then
+		interror = 10
+		Session("intError") = 10
+	else
+		interror = 6
+		Session("intError") = 6
+	end if
+	
+	If (mid(Request.form("txtCode"), 1, 1) = "A" or mid(Request.form("txtCode"), 1, 1) = "B" or mid(Request.form("txtCode"), 1, 1) = "C" or mid(Request.form("txtCode"), 1, 1) = "D" or mid(Request.form("txtCode"), 1, 1) = "E" or mid(Request.form("txtCode"), 1, 1) = "F" or mid(Request.form("txtCode"), 1, 1) = "G" or mid(Request.form("txtCode"), 1, 1) = "H" or mid(Request.form("txtCode"), 1, 1) = "I" or mid(Request.form("txtCode"), 1, 1) = "J" or mid(Request.form("txtCode"), 1, 1) = "K" or mid(Request.form("txtCode"), 1, 1) = "L" or mid(Request.form("txtCode"), 1, 1) = "M" or mid(Request.form("txtCode"), 1, 1) = "N" or mid(Request.form("txtCode"), 1, 1) = "O" or mid(Request.form("txtCode"), 1, 1) = "P" or mid(Request.form("txtCode"), 1, 1) = "Q" or mid(Request.form("txtCode"), 1, 1) = "R" or mid(Request.form("txtCode"), 1, 1) = "S" or mid(Request.form("txtCode"), 1, 1) = "T" or mid(Request.form("txtCode"), 1, 1) = "U" or mid(Request.form("txtCode"), 1, 1) = "V" or mid(Request.form("txtCode"), 1, 1) = "W" or mid(Request.form("txtCode"), 1, 1) = "X" or mid(Request.form("txtCode"), 1, 1) = "Y" or mid(Request.form("txtCode"), 1, 1) = "Z" or IsNumeric(mid(Request.form("txtCode"), 1, 1)) = True) AND (mid(Request.form("txtCode"), 2, 1) = "A" or mid(Request.form("txtCode"), 2, 1) = "B" or mid(Request.form("txtCode"), 2, 1) = "C" or mid(Request.form("txtCode"), 2, 1) = "D" or mid(Request.form("txtCode"), 2, 1) = "E" or mid(Request.form("txtCode"), 2, 1) = "F" or mid(Request.form("txtCode"), 2, 1) = "G" or mid(Request.form("txtCode"), 2, 1) = "H" or mid(Request.form("txtCode"), 2, 1) = "I" or mid(Request.form("txtCode"), 2, 1) = "J" or mid(Request.form("txtCode"), 2, 1) = "K" or mid(Request.form("txtCode"), 2, 1) = "L" or mid(Request.form("txtCode"), 2, 1) = "M" or mid(Request.form("txtCode"), 2, 1) = "N" or mid(Request.form("txtCode"), 2, 1) = "O" or mid(Request.form("txtCode"), 2, 1) = "P" or mid(Request.form("txtCode"), 2, 1) = "Q" or mid(Request.form("txtCode"), 2, 1) = "R" or mid(Request.form("txtCode"), 2, 1) = "S" or mid(Request.form("txtCode"), 2, 1) = "T" or mid(Request.form("txtCode"), 2, 1) = "U" or mid(Request.form("txtCode"), 2, 1) = "V" or mid(Request.form("txtCode"), 2, 1) = "W" or mid(Request.form("txtCode"), 2, 1) = "X" or mid(Request.form("txtCode"), 2, 1) = "Y" or mid(Request.form("txtCode"), 2, 1) = "Z" or IsNumeric(mid(Request.form("txtCode"), 2, 1)) = True) AND (mid(Request.form("txtCode"), 3, 1) = "A" or mid(Request.form("txtCode"), 3, 1) = "B" or mid(Request.form("txtCode"), 3, 1) = "C" or mid(Request.form("txtCode"), 3, 1) = "D" or mid(Request.form("txtCode"), 3, 1) = "E" or mid(Request.form("txtCode"), 3, 1) = "F" or mid(Request.form("txtCode"), 3, 1) = "G" or mid(Request.form("txtCode"), 3, 1) = "H" or mid(Request.form("txtCode"), 3, 1) = "I" or mid(Request.form("txtCode"), 3, 1) = "J" or mid(Request.form("txtCode"), 3, 1) = "K" or mid(Request.form("txtCode"), 3, 1) = "L" or mid(Request.form("txtCode"), 3, 1) = "M" or mid(Request.form("txtCode"), 3, 1) = "N" or mid(Request.form("txtCode"), 3, 1) = "O" or mid(Request.form("txtCode"), 3, 1) = "P" or mid(Request.form("txtCode"), 3, 1) = "Q" or mid(Request.form("txtCode"), 3, 1) = "R" or mid(Request.form("txtCode"), 3, 1) = "S" or mid(Request.form("txtCode"), 3, 1) = "T" or mid(Request.form("txtCode"), 3, 1) = "U" or mid(Request.form("txtCode"), 3, 1) = "V" or mid(Request.form("txtCode"), 3, 1) = "W" or mid(Request.form("txtCode"), 3, 1) = "X" or mid(Request.form("txtCode"), 3, 1) = "Y" or mid(Request.form("txtCode"), 3, 1) = "Z" or IsNumeric(mid(Request.form("txtCode"), 3, 1)) = True) AND (mid(Request.form("txtCode"), 4, 1) = "A" or mid(Request.form("txtCode"), 4, 1) = "B" or mid(Request.form("txtCode"), 4, 1) = "C" or mid(Request.form("txtCode"), 4, 1) = "D" or mid(Request.form("txtCode"), 4, 1) = "E" or mid(Request.form("txtCode"), 4, 1) = "F" or mid(Request.form("txtCode"), 4, 1) = "G" or mid(Request.form("txtCode"), 4, 1) = "H" or mid(Request.form("txtCode"), 4, 1) = "I" or mid(Request.form("txtCode"), 4, 1) = "J" or mid(Request.form("txtCode"), 4, 1) = "K" or mid(Request.form("txtCode"), 4, 1) = "L" or mid(Request.form("txtCode"), 4, 1) = "M" or mid(Request.form("txtCode"), 4, 1) = "N" or mid(Request.form("txtCode"), 4, 1) = "O" or mid(Request.form("txtCode"), 4, 1) = "P" or mid(Request.form("txtCode"), 4, 1) = "Q" or mid(Request.form("txtCode"), 4, 1) = "R" or mid(Request.form("txtCode"), 4, 1) = "S" or mid(Request.form("txtCode"), 4, 1) = "T" or mid(Request.form("txtCode"), 4, 1) = "U" or mid(Request.form("txtCode"), 4, 1) = "V" or mid(Request.form("txtCode"), 4, 1) = "W" or mid(Request.form("txtCode"), 4, 1) = "X" or mid(Request.form("txtCode"), 4, 1) = "Y" or mid(Request.form("txtCode"), 4, 1) = "Z" or IsNumeric(mid(Request.form("txtCode"), 4, 1)) = True) then
+		interror = 11
+		Session("intError") = 11
+	else
+        error = request.Form("txtCode")
+		interror = 7
+		Session("intError") = 7
+	end if
+	
+	If Not rstUser.EOF Then		
+		'---User Name already Exists
+		intError = 1
+		Session("intError") = 1
+		'rstUser.Close
+	End If
+	'response.write "intError " & intError & " Session(intError) " & Session("intError") & " Request.form(txtCode) " & Request.form("txtCode")
+	'response.end
+	If rstUser.EOF AND interror <> 5 AND interror <> 6  AND interror <> 7 then
+            isDHL = ""
+        If Ucase(Session("cltcode")) = "DHLEXA" or UCASE(Session("cltcode")) = "FEDEX" or isAspacClient = "YES" then
+            isDHL = "insert into cwsexporter (Exp_code,Exp_name,Exp_TIN,Exp_adr1,Exp_adr2,Exp_adr3,Exp_adr4,PrePAcct,ExpDUNS,ExpContactPerson,ExpEmail,ExpPlantFaxNo,ExpPlantTelNo,cltcode, date_created, date_modified, DHLppa, ZoneCode) " &_
+		"values ('"&iExp_code&"','"&iExp_name&"','"&iExp_TIN&"','"&iExp_adr1&"','"&iExp_adr2&"','"&iExp_adr3&"','"&iExp_adr4&"','"&iPrePAcct&"','"&iExpDUNS&"','"&iExpContactPerson&"','"&iExpMail&"','"&iExpPlantFaxNo&"','"&iExpPlantTelNo&"','" & Session("cltcode") & "','" & Now() & "','" & Now() & "','1','" & iZoneCode & "') "
+        else
+            isDHL = "insert into cwsexporter (Exp_code,Exp_name,Exp_TIN,Exp_adr1,Exp_adr2,Exp_adr3,Exp_adr4,PrePAcct,ExpDUNS,ExpContactPerson,ExpEmail,ExpPlantFaxNo,ExpPlantTelNo,cltcode, date_created,date_modified) " &_
+		"values ('"&iExp_code&"','"&iExp_name&"','"&iExp_TIN&"','"&iExp_adr1&"','"&iExp_adr2&"','"&iExp_adr3&"','"&iExp_adr4&"','"&iPrePAcct&"','"&iExpDUNS&"','"&iExpContactPerson&"','"&iExpMail&"','"&iExpPlantFaxNo&"','"&iExpPlantTelNo&"','" & Session("cltcode") & "','" & Now() & "','" & Now() & "') "
+		
+			Insertuncmptab = "insert into uncmptab (CONTIN, CONNAME, CONADDR1, CONADDR2, CONADDR3, CONADDR4, CONCTY, CONTEL, CONFAX, CONSPC, CONNUM, CONSTAT, CONSERSTA, Shd_Cod)" &_
+			"values ('"&iExp_TIN&"', '"&iExp_name&"', '"&iExp_adr1&"', '"&iExp_adr2&"', '"&iExp_adr3&"', '"&iExp_adr4&"', 'PHILIPPINES', '"&iExpContactPerson&"', NULL, NULL, '1', 'U', NULL, NULL)"
+        end if
+		set rsAddExporter = Server.CreateObject("ADODB.Recordset")
+		rsAddExporter.ActiveConnection = constrCOMINScd
+		rsAddExporter.Source = isDHL
+		rsAddExporter.CursorType = 0
+		rsAddExporter.CursorLocation = 2
+		rsAddExporter.LockType = 3
+		rsAddExporter.Open
+		rsAddExporter_numRows = 0
+		
+		set rsAddExporter2 = Server.CreateObject("ADODB.Recordset")
+		rsAddExporter2.ActiveConnection = constrCOMINScd
+		rsAddExporter2.Source = Insertuncmptab
+		rsAddExporter2.CursorType = 0
+		rsAddExporter2.CursorLocation = 2
+		rsAddExporter2.LockType = 3
+		rsAddExporter2.Open
+		rsAddExporter2_numRows = 0
+		
+		set rsCWSEXPORTERChangesLogs = Server.CreateObject("ADODB.Recordset")
+		rsCWSEXPORTERChangesLogs.ActiveConnection = constrCOMINScd  
+		rsCWSEXPORTERChangesLogs.Source = "insert into CWSEXPORTERChangesLogs (users, date_modified, exporter_name, remarks, exp_code) " &_
+		"values ('"&session("userid")&"','"&Now()&"','"&iExp_name&"','New Added','"&iExp_code&"') "
+		rsCWSEXPORTERChangesLogs.CursorType = 0
+		rsCWSEXPORTERChangesLogs.CursorLocation = 2
+		rsCWSEXPORTERChangesLogs.LockType = 3
+		rsCWSEXPORTERChangesLogs.Open
+		response.Redirect("cd-client.asp?cn=" & EncryptPassword(CStr(MM_DB)))
+	end if
+	'response.write right(Request.form("txtCode"),1) & "-" & intError
+	rstUser.Close
+	
+end if
+
+
+
+
+set rsCountryExporter = Server.CreateObject("ADODB.Recordset")
+rsCountryExporter.ActiveConnection = constrCOMINScd  
+rsCountryExporter.Source = "SELECT * FROM GBCTYTAB_D"
+rsCountryExporter.CursorType = 0
+rsCountryExporter.CursorLocation = 2
+rsCountryExporter.LockType = 3
+rsCountryExporter.Open
+rsCountryExporter_numRows = 0
+
+set rstGBCUOTAB2 = Server.CreateObject("ADODB.Recordset")	
+rstGBCUOTAB2.ActiveConnection =constrCOMINScd   	
+rstGBCUOTAB2.Source = "SELECT * FROM GBCUOTAB8ZN ORDER BY cuo_nam"	
+rstGBCUOTAB2.CursorType = 0	
+rstGBCUOTAB2.CursorLocation = 2	
+rstGBCUOTAB2.LockType = 3	
+rstGBCUOTAB2.Open	
+rstGBCUOTAB2_numRows = 0
+%> 
+<html>
+<head>
+<title>Add Client</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<script language="JavaScript">
+<!--
+    function MM_findObj(n, d) { //v3.0
+        var p, i, x; if (!d) d = document; if ((p = n.indexOf("?")) > 0 && parent.frames.length) {
+            d = parent.frames[n.substring(p + 1)].document; n = n.substring(0, p);
+        }
+        if (!(x = d[n]) && d.all) x = d.all[n]; for (i = 0; !x && i < d.forms.length; i++) x = d.forms[i][n];
+        for (i = 0; !x && d.layers && i < d.layers.length; i++) x = MM_findObj(n, d.layers[i].document); return x;
+    }
+
+    function MM_validateForm() { //v3.0
+        var i, p, q, nm, test, num, min, max, errors = '', args = MM_validateForm.arguments;
+        for (i = 0; i < (args.length - 2); i += 3) {
+            test = args[i + 2]; val = MM_findObj(args[i]);
+            if (val) {
+                nm = val.name; if ((val = val.value) != "") {
+                    if (test.indexOf('isEmail') != -1) {
+                        p = val.indexOf('@');
+                        if (p < 1 || p == (val.length - 1)) errors += '- ' + nm + ' must contain an e-mail address.\n';
+                    } else if (test != 'R') {
+                        num = parseFloat(val);
+                        if (val != '' + num) errors += '- ' + nm + ' must contain a number.\n';
+                        if (test.indexOf('inRange') != -1) {
+                            p = test.indexOf(':');
+                            min = test.substring(8, p); max = test.substring(p + 1);
+                            if (num < min || max < num) errors += '- ' + nm + ' must contain a number between ' + min + ' and ' + max + '.\n';
+                        }
+                    }
+                } else if (test.charAt(0) == 'R') errors += '- ' + nm + ' is required.\n';
+            }
+        } if (errors) alert('The following error(s) occurred:\n' + errors);
+        document.MM_returnValue = (errors == '');
+    }
+//-->
+</script>
+<link rel="stylesheet" href="../../global.css" type="text/css">
+</head>
+<body topmargin="0" leftmargin="0" marginheight="0" marginwidth="0" bgcolor="#999999" text="#000000">
+<!--<form name="frmEdit" action="<%'=MM_editAction%>" method="post" onSubmit="MM_validateForm('txtCode','','R','txtName','','R','txtTIN','','R','txtAddress','','R');return document.MM_returnValue">-->
+
+<form name="frmEdit" action="cd-client-add.asp" method="post">
+  <br>
+  <table width="780" border="0" cellspacing="0" cellpadding="0" align="center" height="530">
+    <!--DWLayoutTable-->
+    <tr> 
+      <td width="782"> <table width="780" border="0" cellspacing="0" cellpadding="1" bgcolor="#666666" height="35" align="center">
+          <tr> 
+            <td> <table width="780" border="0" cellspacing="0" cellpadding="0" height="35">
+                <tr> 
+                  <td bgcolor="#666699"><b><font color="#FFFFFF" class="heading">&nbsp;&nbsp;Code 
+                    Maintenance &gt;<font color="#CCCCCC"> Add Client</font></font></b></td>
+                </tr>
+              </table></td>
+          </tr>
+        </table></td>
+    </tr>
+    <tr> 
+      <td height="447" valign="middle"> <table width="780" border="0" cellspacing="0" cellpadding="1" align="center" bgcolor="#333333">
+          <!--DWLayoutTable-->
+          <tr> 
+          <!--old height 437-->
+            <td width="348" height="360" valign="top"><table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#CCCCCC">
+                <!--DWLayoutTable-->
+                <%if interror = 0 then%>
+                <tr bgcolor="#999999"> 
+                  <td height="23" colspan="3" valign="middle" class="body" align="center"><strong>&nbsp;Please fill in the neccessary information:</strong></td>                </tr>
+                <%end if%>
+		<%if interror = 1 then%>
+		<tr bgcolor="#999999"> 
+		  <td height="23" colspan="3" valign="middle" class="body" align="center"><strong>&nbsp;* Duplicate Client code, please re-enter details * </strong></td>
+		</tr>
+		<%end if%>
+        <%if interror = 5 then%>
+		<tr bgcolor="#999999"> 
+		  <td height="23" colspan="3" valign="middle" class="body" align="center"><strong>&nbsp;* Code should be 4 char long * </strong></td>
+		</tr>
+		<%end if%>
+        <%if interror = 6 then%>
+		<tr bgcolor="#999999"> 
+		  <td height="23" colspan="3" valign="middle" class="body" align="center"><strong>&nbsp;* Client code already in use, please re-enter details * </strong></td>
+		</tr>
+		<%end if%>
+		<%if interror = 7 then%>
+		<tr bgcolor="#999999"> 
+		  <td height="23" colspan="3" valign="middle" class="body" align="center"><strong>&nbsp;* Client code can only be letters and/or numbers, please re-enter details * <% response.write(error) %></strong></td>
+		</tr>
+		<%end if%>
+         
+         <%if interror = 0 then%>       
+                <tr> 
+                  <td height="20"></td>
+                  <td valign="middle" class="body" width="200">Code:</td>
+                  <td valign="top"><input name="txtCode" id="txtCode" type="text" value="" size="10" maxlength="4" style="cursor: not-allowed;" readonly>
+                  <!--<font color="#FF0000" size="-3">&quot;only letters and/or numbers&quot;</font></td> -->
+                </tr>
+                <tr> 
+                  <td height="20"></td>
+                  <td valign="middle" class="body">TIN:</td>
+                  <td valign="top"><input name="txtTIN" type="text" value="<% response.write(iExp_TIN) %>" size="20" maxlength="12" onkeyup="toDUNS()"><input type="submit" name="btnAction" value=" Verify "></td>
+                  
+                </tr>
+                <tr> 
+                  <td height="20"></td>
+                  <td valign="middle" class="body">DUNS:</td>
+                  <td valign="top"><input name="txtDUNS" type="text" value="<% response.write(iExp_TIN) %>" size="20" maxlength="12" style="cursor: not-allowed;" readonly></td>
+				  
+                </tr>
+                <tr> 
+                  <td height="20"></td>
+                  
+                  <td valign="middle" class="body">Name:</td>
+                  <td valign="top"><input name="txtName" type="text" value="<% response.write(name) %>" size="50" maxlength="50" readonly=""></td>
+                </tr>
+                <tr> 
+                  <td height="20"></td>
+                  <td valign="middle" class="body">Address:</td>
+                  <td valign="top"><input name="txtAddress1" class="optional" type="text" value="<% response.write(address1) %>" size="50" maxlength="35"></td>
+                </tr>
+                <tr> 
+                  <td height="20"></td>
+                  <td>&nbsp;</td>
+                  <td valign="top"><input name="txtAddress2" class="optional" type="text" value="<% response.write(address2) %>" size="50" maxlength="35" class="optional"></td>
+                </tr>
+                <tr> 
+                  <td height="20"></td>
+                  <td>&nbsp;</td>
+                  <td valign="top"><input name="txtAddress3" class="optional" type="text" value="<% response.write(address3) %>" size="50" maxlength="35" class="optional"></td>
+                </tr>
+                <tr> 
+                  <td height="20"></td>
+                  <td></td>
+                  <td valign="top"><input name="txtAddress4" type="text" value="<% response.write(address4) %>" size="50" maxlength="35" class="optional"></td>
+                </tr>
+                
+                <tr> 
+                  <td height="20"></td>
+                  <td valign="middle" class="body">Prepaid Acct. No.:</td>
+                  <td valign="top"><input name="txtPrepAcct" type="text" value="" size="20" maxlength="17" class="optional"></td>
+                </tr>	
+                <%if UCASE(Session("CLTCODE")) = "FEDEX" or UCASE(Session("CLTCODE")) = "DHLEXA" or isAspacClient = "YES" then  %>	
+                <tr> 	
+                    <td width="5%">&nbsp;</td>	
+                    <td class="body" width="36%">Zone Location:</td>	
+                    <td class="body" width="55%">                       				  		
+                      <select name="lstZoneCode">					  	
+                        <option value="None">Please select</option>	
+                    	<%While (NOT rstGBCUOTAB2.EOF)%>	
+								<option value="<%=(rstGBCUOTAB2.Fields.Item("cuo_Cod").Value)%>" 	
+							  <%'If NOT(rstTBLIMPAPL.EOF) Then	
+							'	If Trim(rstTBLIMPAPL("TPort")) = Trim(rstGBCUOTAB2("cuo_Cod")) Then Response.write "Selected"							
+							'  End If%>><%=rstGBCUOTAB2("cuo_cod") & " - " & rstGBCUOTAB2("cuo_nam")%></option>	
+							<%rstGBCUOTAB2.MoveNext()	
+							Wend	
+							
+						If (rstGBCUOTAB2.CursorType > 0) Then	
+						  rstGBCUOTAB2.MoveFirst	
+						Else	
+						  rstGBCUOTAB2.Requery	
+						End If%>						
+                      </select>	
+                    </td>					
+                    <td width="4%">&nbsp;</td>	
+                  </tr>	
+                  <tr> 	
+                    <td width="5%">&nbsp;</td>	
+                    <td class="body" width="36%">&nbsp;</td>	
+                    <td class="body" width="55%">                       				  		
+                      <p><font size = "1" color = "red">For Mode of Declaration 8ZN or 8ZE only"</font></p>	
+                    </td>					
+                    <td width="4%">&nbsp;</td>	
+                  </tr>	
+                <%end if %>
+                <!--
+                <tr> 
+                  <td height="20"></td>
+                  <td valign="middle" class="body">Name of City</td>
+                  <td valign="top"><input name="txtNameOfCity" type="text" value="<% response.write(city) %>" size="50" maxlength="50"></td>
+                </tr>
+                <tr> 
+                  <td height="20"></td>
+                  <td valign="middle" class="body">Country Code:</td>
+                  <td valign="top">
+                    <select name="txtCountryCode">
+						<option value="" selected>&nbsp;</option>
+					  <%
+					  do while not rsCountryExporter.eof
+					  %>
+					  <option value="<%=rsCountryExporter("cty_cod")%>"><%=rsCountryExporter("cty_cod")%></option>
+					  <%
+					  	rsCountryExporter.movenext
+					  loop
+					  %>
+                    </select></td>
+                </tr>
+                <tr> 
+                  <td height="20"></td>
+                  <td valign="middle" class="body">Zip Code:</td>
+                  <td valign="top"><input name="txtZip" type="text" value="<% response.write(right(address3,4)) %>" size="15" maxlength="10"></td>
+                </tr>
+                <tr> 
+                  <td height="20"></td>
+                  <td valign="middle" class="body">Region</td>
+                  <td valign="top"><input name="txtRegion" type="text" value="" size="50" maxlength="50"></td>
+                </tr>
+                -->
+                <tr bgcolor="#CCCCCC"> 
+                  <td height="19">&nbsp;</td>
+                  <td colspan="2" valign="top"><!--DWLayoutEmptyCell-->&nbsp;</td>
+                </tr>
+                <tr bgcolor="#999999"> 
+                  <td height="20" colspan="3" valign="middle" class="body"><strong>&nbsp;Contact 
+                    Info:</strong></td>
+                </tr>
+                <tr bgcolor="#CCCCCC"> 
+                  <td height="9" colspan="3" valign="top"><!--DWLayoutEmptyCell-->&nbsp;</td>
+                </tr>
+                <tr> 
+                  <td height="20">&nbsp;</td>
+                  <td valign="middle" class="body">Contact Person:</td>
+                  <td valign="top"><input type="text" name="txtContact" value="" size="50" class="optional"></td>
+                </tr>
+                <tr> 
+                  <td height="20">&nbsp;</td>
+                  <td valign="middle" class="body">E-mail:</td>
+                  <td valign="top"><input type="text" name="txtEmail" value="" size="50" class="optional"></td>
+                </tr>
+                <tr> 
+                  <td height="20">&nbsp;</td>
+                  <td valign="middle" class="body">Fax No.:</td>
+                  <td valign="top"><input type="text" name="txtFax" value="<% response.write(fax) %>" class="optional"></td>
+                </tr>
+                <tr> 
+                  <td height="20">&nbsp;</td>
+                  <td valign="middle" class="body">Tel. No.:</td>
+                  <td valign="top"><input type="text" name="txtTel" value="<% response.write(telno) %>" class="optional"></td>
+                </tr>
+                <tr> 
+                  <td height="20">&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td></td>
+                </tr>
+			<%end if%>
+              </table></td>
+          </tr>
+        </table>
+		</td>
+    </tr>
+    <tr> 
+      <td> <table width="780" border="0" cellspacing="0" cellpadding="1" bgcolor="#666666" height="35" align="center">
+          <tr> 
+            <td> <table width="780" border="0" cellspacing="0" cellpadding="0" height="35">
+                <tr> 
+                  <td bgcolor="#666699"> <div align="center"><b><font color="#FFFFFF" class="heading">
+                      <input type="hidden" name="txtAction"/>
+                      <input type="submit" name="btnAction" value=" Save " onclick="return Validate()">
+                      <input type="button" <%if interror = 0 then%>value=" Cancel "<%else%>value=" Back "<%end if%> onClick="history.back()" name="button2">
+                      </font></b><b><font color="#FFFFFF" class="heading"> </font></b> 
+                    </div></td>
+                </tr>
+              </table></td>
+          </tr>
+        </table></td>
+    </tr>
+  </table>
+  </form>
+<p>&nbsp;</p>
+</body>
+</html>
+<script>
+    function readOnly(){
+        if (document.frmEdit.txtName.value != "")
+        {
+            document.frmEdit.txtName.readOnly = true;
+            document.frmEdit.txtName.style.cursor = "not-allowed";
+        }
+        else
+        {   
+            document.frmEdit.txtName.readOnly = false;
+        }
+        
+        if (document.frmEdit.txtAddress1.value != "")
+        {
+            document.frmEdit.txtAddress1.readOnly = true;
+            document.frmEdit.txtAddress1.style.cursor = "not-allowed";
+
+        } 
+        else
+        {
+            document.frmEdit.txtAddress1.readOnly = false;
+        }
+
+
+        if (document.frmEdit.txtAddress2.value != "")
+        {
+            document.frmEdit.txtAddress2.readOnly = true;
+            document.frmEdit.txtAddress2.style.cursor = "not-allowed";
+
+        } 
+        else
+        {
+            document.frmEdit.txtAddress2.readOnly = false;
+        }
+
+        if (document.frmEdit.txtAddress3.value != "")
+        {
+            document.frmEdit.txtAddress3.readOnly = true;
+            document.frmEdit.txtAddress3.style.cursor = "not-allowed";
+
+        } 
+        else
+        {
+            document.frmEdit.txtAddress3.readOnly = false;
+        }
+
+        if (document.frmEdit.txtAddress4.value != "")
+        {
+            document.frmEdit.txtAddress4.readOnly = true;
+            document.frmEdit.txtAddress4.style.cursor = "not-allowed";
+
+        } 
+        else
+        {
+            document.frmEdit.txtAddress4.readOnly = false;
+        }
+
+//        if (document.frmEdit.txtContact.value != "")
+//        {
+//            document.frmEdit.txtContact.readOnly = true;
+//            document.frmEdit.txtContact.style.cursor = "not-allowed";
+
+//        } 
+//        else
+//        {
+//            document.frmEdit.txtContact.readOnly = false;
+//        }
+//        
+//        if (document.frmEdit.txtEmail.value != "")
+//        {
+//            document.frmEdit.txtEmail.readOnly = true;
+//            document.frmEdit.txtEmail.style.cursor = "not-allowed";
+
+//        } 
+//        else
+//        {
+//            document.frmEdit.txtEmail.readOnly = false;
+//        }
+
+//        if (document.frmEdit.txtFax.value != "")
+//        {
+//            document.frmEdit.txtFax.readOnly = true;
+//            document.frmEdit.txtFax.style.cursor = "not-allowed";
+
+//        } 
+//        else
+//        {
+//            document.frmEdit.txtFax.readOnly = false;
+//        }
+
+//        if (document.frmEdit.txtTel.value != "")
+//        {
+//            document.frmEdit.txtTel.readOnly = true;
+//            document.frmEdit.txtTel.style.cursor = "not-allowed";
+
+//        } 
+//        else
+//        {
+//            document.frmEdit.txtTel.readOnly = false;
+//        }
+    }
+
+    readOnly();
+
+	function toDUNS(){
+		document.frmEdit.txtDUNS.value = document.frmEdit.txtTIN.value;
+	}
+	
+	function generateCode(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+	   }
+	   return result;
+	}
+	
+	function getCode(){
+		document.getElementById("txtCode").value = generateCode(4);
+	}
+
+
+	<!--
+	function Validate() {
+        if (document.frmEdit.txtCode.value == "") {
+			alert("Please fill up \"Code\" field.");
+			document.frmEdit.txtCode.focus();
+			return false;
+		} else if (document.frmEdit.txtCode.value.match(/[^A-z,0-9,-]/img)) {
+			alert("Please enter a valid \"Code\" field.");
+			//alert(<%=Session("intError")%>);
+			document.frmEdit.txtCode.focus();
+		}else if (document.frmEdit.txtTIN.value == "") {
+			alert("Please fill up \"TIN\" field.");
+			document.frmEdit.txtTIN.focus();
+			return false;
+		} else if (document.frmEdit.txtTIN.value.length != 12){
+            alert("The TIN must have a minimum of 12 characters.");
+			document.frmEdit.txtTIN.focus();
+			return false;
+        } 
+        
+        else if (document.frmEdit.txtName.value == "") {
+			alert("Please fill up \"Name\" field.");
+			document.frmEdit.txtName.focus();
+			return false;
+		} 
+        else if (document.frmEdit.txtDUNS.value == "") {
+			alert("Please fill up \"DUNS\" field.");
+			document.frmEdit.txtDUNS.focus();
+			return false;
+		} else if (isNaN(document.frmEdit.txtDUNS.value)) {
+			alert("Only numbers are allowed. Please re-enter.");
+			document.frmEdit.txtDUNS.focus();
+			document.frmEdit.txtDUNS.select();
+			return false;
+		} else if (document.frmEdit.txtAddress1.value == "") {	
+			alert("Please fill up \"Address\" field.");
+			document.frmEdit.txtAddress1.focus();
+			return false;
+		} else if (document.frmEdit.txtNameOfCity.value == "") {
+			alert("Please fill up \"Name of City\" field.");
+			document.frmEdit.txtNameOfCity.focus();
+			return false;
+		} else if (document.frmEdit.txtCountryCode.value == "") {
+			alert("Please select \"Country Code\".");
+			document.frmEdit.txtCountryCode.focus();
+			return false;
+		} else if (document.frmEdit.txtZip.value == "") {
+			alert("Please fill up \"Zip Code\" field.");
+			document.frmEdit.txtZip.focus();
+			return false;
+		} else if (isNaN(document.frmEdit.txtZip.value)) {
+			alert("Only numbers are allowed. Please re-enter.");
+			document.frmEdit.txtZip.focus();
+			document.frmEdit.txtZip.select();
+			return false;
+		} else if (document.frmEdit.txtRegion.value == "") {
+			alert("Please fill up \"Region\" field.");
+			document.frmEdit.txtRegion.focus();
+			return false;
+		}
+//        else if (document.frmEdit.txtContact.value == "") {
+//			alert("Please fill up \"Contact Person\" field.");	
+//			document.frmEdit.txtContact.focus();
+//			return false;
+//		} else if (document.frmEdit.txtEmail.value == "") {
+//			alert("Please fill up \"E-mail\" field.");	
+//			document.frmEdit.txtEmail.focus();
+//			return false;
+
+//		} 
+        else {
+			//alert("yehey");
+			//alert(document.frmEdit.txtCountryCode.value);
+			//return false;
+            return true;
+            
+
+		}
+	} //function Validate()
+//-->
+getCode();
+</script>
