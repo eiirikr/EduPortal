@@ -11097,7 +11097,6 @@ $LANDEDCOST = ($totAVT + $TAXAMT3 + $DV_backpage + $CUD_AMOUNT + $BANKCHARGE + $
 		/* End IPC */
 
 		/* Start CDS */
-		/* Start CDS */
 		//if ($data['FIN_data']['MDec'] != 'IES' && $data['FIN_data']['Stat'] == 'C' || $data['FIN_data']['Stat'] == 'S') {
 		if ($data['FIN_data']['MDec'] != 'IES' && $data['FIN_data']['Stat'] == 'C' || $data['FIN_data']['Stat'] == 'S') {
 		// if (($data['FIN_data']['MDec'] != 'IES' && ($data['FIN_data']['MDec'] != 'IE' && $data['FIN_data']['Mdec2'] != '4')) && ($data['FIN_data']['Stat'] == 'C' || $data['FIN_data']['Stat'] == 'S')) {
@@ -11122,18 +11121,19 @@ $LANDEDCOST = ($totAVT + $TAXAMT3 + $DV_backpage + $CUD_AMOUNT + $BANKCHARGE + $
 			$TAXAMT16 = "100.00";
 		}else{
 			if ($TAXAMT16 == NULL) {
-				$TAXAMT16 = NULL;
+				$TAXCODE16 = "CDS";
+				$TAXAMT16 = "100.00";
 			}else{
 				//$TAXAMT16 = number_format($TAXAMT16, 2);
 				$TAXAMT16 = number_format($TAXAMT16/$data['max_rows'], 2);
 			}
 		}
 
-		$this->SetXY(147, 259);
+		$this->SetXY(147, 260);
 		$this->SetFont('Arial','B',9);
 		$this->Write(0, $TAXCODE16);
 
-		$this->SetXY(147, 257);
+		$this->SetXY(147, 258);
 		$this->SetFont('Arial','B',9);
 		$this->Cell(60,4,$TAXAMT16,0,0,'R');
 
@@ -11145,7 +11145,8 @@ $LANDEDCOST = ($totAVT + $TAXAMT3 + $DV_backpage + $CUD_AMOUNT + $BANKCHARGE + $
 			$TAXAMT17 = "30.00";
 		}else{
 			if ($TAXAMT17 == NULL) {
-				$TAXAMT17 = NULL;
+				$TAXCODE17 = "IRS";
+				$TAXAMT17 = "30.00";
 			}else{
 				$TAXAMT17 = number_format($TAXAMT17, 2);
 			}
@@ -11161,26 +11162,27 @@ $LANDEDCOST = ($totAVT + $TAXAMT3 + $DV_backpage + $CUD_AMOUNT + $BANKCHARGE + $
 
 		/* End IRS */
 
-		/* Start Total GLOBAL Tax */
+		/* Start Total GLOBAL Tax 
+		str_replace(',', '', $TAXAMT9) + */
 		$GTAX1 = str_replace(',', '', $TAXAMT8) + str_replace(',', '', $TAXAMT9) + str_replace(',', '', $TAXAMT10) + str_replace(',', '', $TAXAMT11) + str_replace(',', '', $TAXAMT12) + str_replace(',', '', $TAXAMT13) + str_replace(',', '', $TAXAMT14) + str_replace(',', '', $TAXAMT15) + str_replace(',', '', $TAXAMT16) + str_replace(',', '', $TAXAMT17) + str_replace(',', '', $TAXAMT18) + str_replace(',', '', $TAXAMT19);
 
 		$this->SetXY(147, 265);
-		$this->SetFont('Arial','B',9);
-		$this->Cell(60,4,'Total Global Tax','B',0,'L');
+		$this->SetFont('Arial', 'B', 9);
+		$this->Cell(60, 4, 'Total Global Tax', 'B', 0, 'L');
 
 		$this->SetXY(147, 265);
-		$this->SetFont('Arial','B',9);
-		$this->Cell(60,4,number_format($GTAX1, 2),0,0,'R');
+		$this->SetFont('Arial', 'B', 9);
+		$this->Cell(60, 4, number_format($GTAX1, 2), 0, 0, 'R');
 
 		/* End Total GLOBAL Tax */
 
 		/* Start Total Tax */
-		
+
 		$TTAX1 = $ITAX1 + $GTAX1;
-		
-		$this->SetXY(147, 269);
-		$this->SetFont('Arial','B',9);
-		$this->Cell(60,4,number_format($TTAX1, 2),0,0,'R');
+
+		$this->SetXY(147, 270);
+		$this->SetFont('Arial', 'B', 9);
+		$this->Cell(60, 4, number_format($TTAX1, 2), 0, 0, 'R');
 
 		/* End Total Tax */
 
