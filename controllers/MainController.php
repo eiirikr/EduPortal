@@ -974,7 +974,7 @@ class MainController
                 $IPC = 1000;
             } elseif ($rounded_val <= 750000) {
                 $IPC = 1500;
-            } elseif ($rounded_val <= 999999999999) {
+            } elseif ($rounded_val > 750000) {
                 $IPC = 2000;
             }
 
