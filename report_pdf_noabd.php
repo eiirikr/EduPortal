@@ -4396,13 +4396,17 @@ class PDF extends FPDF{
 		if(round($tot_dutiable_value) >= 250001 && round($tot_dutiable_value) <= 500000){$IPF = 1000;}
 		if(round($tot_dutiable_value) >= 500001 && round($tot_dutiable_value) <= 750000){$IPF = 1500;}
 		if(round($tot_dutiable_value) >= 750001 && round($tot_dutiable_value) <= 999999999999){$IPF = 2000;}*/
-		
+
 		if(round($tot_dutiable_value) >= 0 && round($tot_dutiable_value) <= 25000){$IPF = 250;}
 		if(round($tot_dutiable_value) > 25000 && round($tot_dutiable_value) <= 50000){$IPF = 500;}
 		if(round($tot_dutiable_value) > 50000 && round($tot_dutiable_value) <= 250000){$IPF = 750;}
 		if(round($tot_dutiable_value) > 250000 && round($tot_dutiable_value) <= 500000){$IPF = 1000;}
 		if(round($tot_dutiable_value) > 500000 && round($tot_dutiable_value) <= 750000){$IPF = 1500;}
-		if(round($tot_dutiable_value) > 750000){$IPF = 2000;}
+		if(round($tot_dutiable_value) > 750000){$IPF = 2000;}		
+
+		if (($data['FIN_data']['MDec'] == '8ZN') || ($data['FIN_data']['MDec'] == '8PP') || ($data['FIN_data']['MDec'] == '8PE') || ($data['FIN_data']['MDec'] == '8ZE')){
+			$IPF = 250;
+		}
 		/* End IPF*/
 
 		/* Start Doc Fee */
@@ -4455,7 +4459,7 @@ class PDF extends FPDF{
 
 		if (($data['FIN_data']['MDec'] == 'IES') || ($data['FIN_data']['MDec'] == 'IE' && $data['FIN_data']['Mdec2'] == '4')) {
 			//06062024: SPagara: removed IPF for IES
-			$IPF = 0;
+			// $IPF = 0;
 
 			//$BrokerFee = round(((str_replace(',', '', $data['FIN_data']['InvValue'])/str_replace(',', '', $data['FIN_data']['CustomVal'])) * 700),2);
 			$BrokerFee = round((700/$data['max_rows']),2);
@@ -7466,6 +7470,10 @@ class PDF extends FPDF{
 		if($dutiable_value_total > 250000 && $dutiable_value_total <= 500000){$IPF_val = 1000;}
 		if($dutiable_value_total > 500000 && $dutiable_value_total <= 750000){$IPF_val = 1500;}
 		if($dutiable_value_total > 750000 ){$IPF_val = 2000;}
+
+		if (($data['FIN_data']['MDec'] == '8ZN') || ($data['FIN_data']['MDec'] == '8PP') || ($data['FIN_data']['MDec'] == '8PE') || ($data['FIN_data']['MDec'] == '8ZE')){
+			$IPF_val = 250;
+		}
 		
 		/* End IPF*/
 
@@ -10053,7 +10061,7 @@ class PDF extends FPDF{
 		if($DV_backpage > 250000 && $DV_backpage <= 500000){$IPF = 500;}
 		if($DV_backpage > 500000 && $DV_backpage <= 750000){$IPF = 750;}
 		if($DV_backpage > 750000 && $DV_backpage <= 999999999999){$IPF = 1000;}*/
-		
+
 		if($DV_backpage >= 0 && $DV_backpage <= 250000){$IPF = 250;}
 		if($DV_backpage > 25000 && $DV_backpage <= 50000){$IPF = 500;}
 		if($DV_backpage > 50000 && $DV_backpage <= 250000){$IPF = 750;}
@@ -10112,7 +10120,7 @@ class PDF extends FPDF{
 			if($DOCFEE==''){
 			
 			if($filterdate1 < $olddate && $filterdate1!= NULL && $filterdate1!= ''){
-				$DOCFEE = 265;
+				$DOCFEE = 130;
 				}else{
 				//$DOCFEE = 280;
 				//06062024: Spagara: Update
@@ -10129,11 +10137,11 @@ class PDF extends FPDF{
 			}
 			
 		if ($data['FIN_data']['MDec'] == 'ID'){
-			$DOCFEE = 15;
+			$DOCFEE = 130;
 		}
 		
 		if ($data['FIN_data']['MDec'] == 'IE' && $data['FIN_data']['Mdec2'] == '4'){
-			$DOCFEE = 0;
+			$DOCFEE = 130;
 		}
 		/* End Doc Fee */
 
@@ -10278,7 +10286,8 @@ $LANDEDCOST = ($totAVT + $TAXAMT3 + $DV_backpage + $CUD_AMOUNT + $BANKCHARGE + $
 
 
 		if (isset($vat) && !empty($vat)) {
-			$TotalVat = $vat;
+			// $TotalVat = $vat;
+			$TotalVat = round(($LANDEDCOST * 0.12), 2);
 		}elseif (isset($vat)) {
 			if ($data['FIN_data']['Stat'] == 'C' || $data['FIN_data']['Stat'] != 'S') {
 				$TotalVat = round(($LANDEDCOST*0.12), 2);
@@ -10912,23 +10921,23 @@ $LANDEDCOST = ($totAVT + $TAXAMT3 + $DV_backpage + $CUD_AMOUNT + $BANKCHARGE + $
 
 		$this->SetXY(147, 237);
 		$this->SetFont('Arial','B',9);
-		//$this->Write(0, $TAXCODE8);
-		if ($data['FIN_data']['MDec'] == 'IE' && $data['FIN_data']['Mdec2'] == '4'){
-			$this->Write(0, '');
-		}
-		else{
 		$this->Write(0, $TAXCODE8);
-		}
+		// if ($data['FIN_data']['MDec'] == 'IE' && $data['FIN_data']['Mdec2'] == '4'){
+		// 	$this->Write(0, '');
+		// }
+		// else{
+		// $this->Write(0, $TAXCODE8);
+		// }
 
 		$this->SetXY(147, 235);
 		$this->SetFont('Arial','B',9);
-		//$this->Cell(60,4,$TAXAMT8,0,0,'R');
-		if ($data['FIN_data']['MDec'] == 'IE' && $data['FIN_data']['Mdec2'] == '4') {
-			$this->Cell(60,4,'',0,0,'R');
-		}
-		else{
 		$this->Cell(60,4,$TAXAMT8,0,0,'R');
-		}
+		// if ($data['FIN_data']['MDec'] == 'IE' && $data['FIN_data']['Mdec2'] == '4') {
+		// 	$this->Cell(60,4,'',0,0,'R');
+		// }
+		// else{
+		// $this->Cell(60,4,$TAXAMT8,0,0,'R');
+		// }
 		
 		/* End IPF */
 
@@ -11115,7 +11124,7 @@ $LANDEDCOST = ($totAVT + $TAXAMT3 + $DV_backpage + $CUD_AMOUNT + $BANKCHARGE + $
 			}else
 			{
 				$TAXCODE16 = "CDS";
-				$TAXAMT16 = "0.00";
+				$TAXAMT16 = "100.00";
 			}
 		}elseif ($data['FIN_data']['MDec'] == 'IES'){
 			$TAXCODE16 = "CDS";

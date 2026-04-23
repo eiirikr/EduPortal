@@ -1178,21 +1178,28 @@ If Mid(Session("mod_cod"), 1, 1) = "4" Then
 		End If
 		rsBroke.MoveNext
 	Loop
-Else
-    If CDbl(DVALtot) >= 0 And CDbl(DVALtot) <= 25000 Then
-        dblIpf = 250
-    ElseIf CDbl(DVALtot) > 25000 And CDbl(DVALtot) <= 50000 Then
-        dblIpf = 500
-    ElseIf CDbl(DVALtot) > 50000 And CDbl(DVALtot) <= 250000 Then
-        dblIpf = 750
-    ElseIf CDbl(DVALtot) > 250000 And CDbl(DVALtot) <= 500000 Then
-        dblIpf = 1000
-    ElseIf CDbl(DVALtot) > 500000 And CDbl(DVALtot) <= 750000 Then
-        dblIpf = 1500
-    ElseIf CDbl(DVALtot) > 750000 Then
-        dblIpf = 2000
-    End If
 End If
+If Session("mod_cod") = "8ZN" Or _
+	Session("mod_cod") = "8PP" Or _
+	Session("mod_cod") = "8PE" Or _
+	Session("mod_cod") = "8ZE" Then
+
+	dblIpf = 250
+Else
+	If CDbl(DVALtot) >= 0 And CDbl(DVALtot) <= 25000 Then
+		dblIpf = 250
+	ElseIf CDbl(DVALtot) > 25000 And CDbl(DVALtot) <= 50000 Then
+		dblIpf = 500
+	ElseIf CDbl(DVALtot) > 50000 And CDbl(DVALtot) <= 250000 Then
+		dblIpf = 750
+	ElseIf CDbl(DVALtot) > 250000 And CDbl(DVALtot) <= 500000 Then
+		dblIpf = 1000
+	ElseIf CDbl(DVALtot) > 500000 And CDbl(DVALtot) <= 750000 Then
+		dblIpf = 1500
+	ElseIf CDbl(DVALtot) > 750000 Then
+		dblIpf = 2000
+	End If
+End if
 
 '06062024: Spagara: Update for IPF
 'if Session("mod_cod") = "IES" then

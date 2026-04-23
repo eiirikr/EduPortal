@@ -4537,24 +4537,29 @@ class PDF extends FPDF
 		/* Start IPF */
 		//06062024: SPagara: update on IPF/IPC
 		$IPF = 0;
-		if (round($tot_dutiable_value) >= 0 && round($tot_dutiable_value) <= 25000) {
+		if (($data['FIN_data']['MDec'] == '8ZN') || ($data['FIN_data']['MDec'] == '8PP') || ($data['FIN_data']['MDec'] == '8PE') || ($data['FIN_data']['MDec'] == '8ZE')){
 			$IPF = 250;
+		} else {
+			if (round($tot_dutiable_value) >= 0 && round($tot_dutiable_value) <= 25000) {
+			$IPF = 250;
+			}
+			if (round($tot_dutiable_value) >= 25001 && round($tot_dutiable_value) <= 50000) {
+				$IPF = 500;
+			}
+			if (round($tot_dutiable_value) >= 50001 && round($tot_dutiable_value) <= 250000) {
+				$IPF = 750;
+			}
+			if (round($tot_dutiable_value) >= 250001 && round($tot_dutiable_value) <= 500000) {
+				$IPF = 1000;
+			}
+			if (round($tot_dutiable_value) >= 500001 && round($tot_dutiable_value) <= 750000) {
+				$IPF = 1500;
+			}
+			if (round($tot_dutiable_value) >= 750001 && round($tot_dutiable_value) <= 999999999999) {
+				$IPF = 2000;
+			}
 		}
-		if (round($tot_dutiable_value) >= 25001 && round($tot_dutiable_value) <= 50000) {
-			$IPF = 500;
-		}
-		if (round($tot_dutiable_value) >= 50001 && round($tot_dutiable_value) <= 250000) {
-			$IPF = 750;
-		}
-		if (round($tot_dutiable_value) >= 250001 && round($tot_dutiable_value) <= 500000) {
-			$IPF = 1000;
-		}
-		if (round($tot_dutiable_value) >= 500001 && round($tot_dutiable_value) <= 750000) {
-			$IPF = 1500;
-		}
-		if (round($tot_dutiable_value) >= 750001 && round($tot_dutiable_value) <= 999999999999) {
-			$IPF = 2000;
-		}
+		
 		/* End IPF*/
 
 		/* Start Doc Fee */
@@ -4567,7 +4572,7 @@ class PDF extends FPDF
 			} else {
 				//$DOCFEE = 265;
 				//$DOCFEE = 280;
-				$DOCFEE = round((30 / $data['max_rows']), 2);
+				$DOCFEE = round((130 / $data['max_rows']), 2);
 			}
 		} else {
 			//$DOCFEE = 30 / $data['max_rows'];
@@ -4603,9 +4608,12 @@ class PDF extends FPDF
 			$IPF = round((250 / $data['max_rows']), 2); //250;
 		}
 		if (($data['FIN_data']['MDec'] == 'IES') || ($data['FIN_data']['MDec'] == 'IE' && $data['FIN_data']['Mdec2'] == '4')) {
-			$IPF = 0;
+			// $IPF = 0;
 			//$BrokerFee = 700 / $data['max_rows'];
 			$BrokerFee = round(((str_replace(',', '', $data['FIN_data']['InvValue']) / str_replace(',', '', $data['FIN_data']['CustomVal'])) * 700), 2);
+		}
+		if (($data['FIN_data']['MDec'] == '8ZN') || ($data['FIN_data']['MDec'] == '8PP') || ($data['FIN_data']['MDec'] == '8PE') || ($data['FIN_data']['MDec'] == '8ZE')){
+			$IPF = 250;
 		}
 		$VATBASE = round(($dutiable_value + $CUDAMOUNT + $BrokerFee + $IPF + $DOCFEE + $BANKCHARGE + str_replace(',', '', $wharfage) + str_replace(',', '', $arrastre)), 2);
 
@@ -7558,25 +7566,29 @@ class PDF extends FPDF
 		if($dutiable_value_total >= 500001 && $dutiable_value_total <= 750000){$IPF_val = 750;}
 		if($dutiable_value_total >= 750001 && $dutiable_value_total <= 999999999999){$IPF_val = 1000;}*/
 
-		if ($dutiable_value_total >= 0 && $dutiable_value_total <= 250000) {
+		if (($data['FIN_data']['MDec'] == '8ZN') || ($data['FIN_data']['MDec'] == '8PP') || ($data['FIN_data']['MDec'] == '8PE') || ($data['FIN_data']['MDec'] == '8ZE')){
 			$IPF = 250;
 		}
-		if ($dutiable_value_total > 25000 && $dutiable_value_total <= 50000) {
-			$IPF = 500;
+		else {
+			if ($dutiable_value_total >= 0 && $dutiable_value_total <= 250000) {
+			$IPF = 250;
+			}
+			if ($dutiable_value_total > 25000 && $dutiable_value_total <= 50000) {
+				$IPF = 500;
+			}
+			if ($dutiable_value_total > 50000 && $dutiable_value_total <= 250000) {
+				$IPF = 750;
+			}
+			if ($dutiable_value_total > 250000 && $dutiable_value_total <= 500000) {
+				$IPF = 1000;
+			}
+			if ($dutiable_value_total > 500000 && $dutiable_value_total <= 750000) {
+				$IPF = 1500;
+			}
+			if ($dutiable_value_total > 750000) {
+				$IPF = 2000;
+			}
 		}
-		if ($dutiable_value_total > 50000 && $dutiable_value_total <= 250000) {
-			$IPF = 750;
-		}
-		if ($dutiable_value_total > 250000 && $dutiable_value_total <= 500000) {
-			$IPF = 1000;
-		}
-		if ($dutiable_value_total > 500000 && $dutiable_value_total <= 750000) {
-			$IPF = 1500;
-		}
-		if ($dutiable_value_total > 750000) {
-			$IPF = 2000;
-		}
-
 		/* End IPF*/
 
 		/* Start Bank Charge */
@@ -8214,9 +8226,9 @@ class PDF extends FPDF
 					//$IPF = 250;
 					$IPF = round((250 / $data['max_rows']), 2);
 				}
-				if (($data['FIN_data']['MDec'] == 'IES') || ($data['FIN_data']['MDec'] == 'IE' && $data['FIN_data']['Mdec2'] == '4')) {
-					$IPF = 0;
-				}
+				// if (($data['FIN_data']['MDec'] == 'IES') || ($data['FIN_data']['MDec'] == 'IE' && $data['FIN_data']['Mdec2'] == '4')) {
+				// 	$IPF = 0;
+				// }
 
 
 				//$this->SetXY(85, $y_2ndpage - 62);
@@ -10126,35 +10138,37 @@ class PDF extends FPDF
 		if($DV_backpage > 250000 && $DV_backpage <= 500000){$IPF = 500;}
 		if($DV_backpage > 500000 && $DV_backpage <= 750000){$IPF = 750;}
 		if($DV_backpage > 750000 && $DV_backpage <= 999999999999){$IPF = 1000;}*/
-		if ($DV_backpage >= 0 && $DV_backpage <= 250000) {
-			$IPF = 250;
-		}
-		if ($DV_backpage > 25000 && $DV_backpage <= 50000) {
-			$IPF = 500;
-		}
-		if ($DV_backpage > 50000 && $DV_backpage <= 250000) {
-			$IPF = 750;
-		}
-		if ($DV_backpage > 250000 && $DV_backpage <= 500000) {
-			$IPF = 1000;
-		}
-		if ($DV_backpage > 500000 && $DV_backpage <= 750000) {
-			$IPF = 1500;
-		}
-		if ($DV_backpage > 750000) {
-			$IPF = 2000;
-		}
-
-
-		/*if ($data['FIN_data']['MDec'] == '7' || $data['FIN_data']['MDec'] == '7T' ) {
-			$IPF = 250;
-		}*/
 		if (($data['FIN_data']['MDec'] == '8ZN') || ($data['FIN_data']['MDec'] == '8PP') || ($data['FIN_data']['MDec'] == '8PE') || ($data['FIN_data']['MDec'] == '8ZE')) {
 			$IPF = 250;
 		}
-		if (($data['FIN_data']['MDec'] == 'IES') || ($data['FIN_data']['MDec'] == 'IE' && $data['FIN_data']['Mdec2'] == '4')) {
-			$IPF = 0;
+		else {
+			if ($DV_backpage >= 0 && $DV_backpage <= 250000) {
+			$IPF = 250;
+			}
+			if ($DV_backpage > 25000 && $DV_backpage <= 50000) {
+				$IPF = 500;
+			}
+			if ($DV_backpage > 50000 && $DV_backpage <= 250000) {
+				$IPF = 750;
+			}
+			if ($DV_backpage > 250000 && $DV_backpage <= 500000) {
+				$IPF = 1000;
+			}
+			if ($DV_backpage > 500000 && $DV_backpage <= 750000) {
+				$IPF = 1500;
+			}
+			if ($DV_backpage > 750000) {
+				$IPF = 2000;
+			}
 		}
+		
+		/*if ($data['FIN_data']['MDec'] == '7' || $data['FIN_data']['MDec'] == '7T' ) {
+			$IPF = 250;
+		}*/
+		
+		// if (($data['FIN_data']['MDec'] == 'IES') || ($data['FIN_data']['MDec'] == 'IE' && $data['FIN_data']['Mdec2'] == '4')) {
+		// 	$IPF = 0;
+		// }
 
 		if (isset($TAXAMT8) && !empty($TAXAMT8)) {
 			$IPF = $TAXAMT8;
@@ -10196,7 +10210,7 @@ class PDF extends FPDF
 		if ($DOCFEE == '') {
 
 			if ($filterdate1 < $olddate && $filterdate1 != NULL && $filterdate1 != '') {
-				$DOCFEE = 265;
+				$DOCFEE = 130;
 			} else {
 				$DOCFEE = 130;
 			}
@@ -10209,15 +10223,15 @@ class PDF extends FPDF
 			//$DOCFEE = round(((str_replace(',', '', $data['FIN_data']['InvValue'])/str_replace(',', '', $data['FIN_data']['CustomVal'])) * 30),2);
 			//06062024: Spagara: Update Aspac CLTCODE
 			$DOCFEE = 130;
-			$DOCFEE2 = 30;
+			$DOCFEE2 = 130;
 		}
 
 		if ($data['FIN_data']['MDec'] == 'ID') {
-			$DOCFEE = 15;
+			$DOCFEE = 130;
 		}
 
 		if ($data['FIN_data']['MDec'] == 'IE' && $data['FIN_data']['Mdec2'] == '4') {
-			$DOCFEE = 0;
+			$DOCFEE = 130;
 		}
 		/* End Doc Fee */
 
@@ -10973,6 +10987,10 @@ class PDF extends FPDF
 			$TAXAMT18 = NULL;
 		} else {
 			$TAXAMT18 = number_format($TAXAMT18, 2);
+		}
+		if (($data['FIN_data']['MDec'] == '8ZN') || ($data['FIN_data']['MDec'] == '8PP') || ($data['FIN_data']['MDec'] == '8PE') || ($data['FIN_data']['MDec'] == '8ZE')){
+			$TAXCODE18 = "IPC";
+			$TAXAMT18 = 250;
 		}
 
 		$this->SetXY(147, 242);

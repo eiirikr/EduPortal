@@ -961,19 +961,22 @@ class MainController
         $CUD                  = round($CUD, 2);
 
         $rounded_val = round($total_dutiable_value);
-        if ($rounded_val <= 25000) {
-            $IPC = 250;
-        } elseif ($rounded_val <= 50000) {
-            $IPC = 500;
-        } elseif ($rounded_val <= 250000) {
-            $IPC = 750;
-        } elseif ($rounded_val <= 500000) {
-            $IPC = 1000;
-        } elseif ($rounded_val <= 750000) {
-            $IPC = 1500;
-        } else {
-            $IPC = 2000;
-        }
+
+            if ($master['MDec'] == '8ZN' || $master['MDec'] == '8PP' || $master['MDec'] == '8PE' || $master['MDec'] == '8ZE') {
+                $IPC = 250;
+            } elseif ($rounded_val <= 25000) {
+                $IPC = 250;
+            } elseif ($rounded_val <= 50000) {
+                $IPC = 500;
+            } elseif ($rounded_val <= 250000) {
+                $IPC = 750;
+            } elseif ($rounded_val <= 500000) {
+                $IPC = 1000;
+            } elseif ($rounded_val <= 750000) {
+                $IPC = 1500;
+            } elseif ($rounded_val <= 999999999999) {
+                $IPC = 2000;
+            }
 
         if (empty($fin['WOBankCharge'])) {
             $bank_charge = round($total_dutiable_value * 0.00125, 2);
