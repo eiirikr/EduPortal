@@ -4563,7 +4563,7 @@ class PDF extends FPDF
 				//$DOCFEE = round(((str_replace(',', '', $data['FIN_data']['InvValue'])/str_replace(',', '', $data['FIN_data']['CustomVal'])) * 265),2);
 				//$DOCFEE = round(((str_replace(',', '', $data['FIN_data']['InvValue'])/str_replace(',', '', $data['FIN_data']['CustomVal'])) * 280),2);
 				//06062024: Spagara: update
-				$DOCFEE = round((280 / $data['max_rows']), 2);
+				$DOCFEE = round((130 / $data['max_rows']), 2);
 			} else {
 				//$DOCFEE = 265;
 				//$DOCFEE = 280;
@@ -4612,6 +4612,7 @@ class PDF extends FPDF
 		if ($data['FIN_data']['MDec'] == 'IED') {
 			$VATBASE = 0;
 		}
+		
 
 
 		/* End VAT Computation */
@@ -8183,7 +8184,7 @@ class PDF extends FPDF
 				if ($data['FIN_data']['MDec'] != 'IES') {
 					//$DOCFEE = round((($InvValue/$CustomVal) * 265),2);
 					//$DOCFEE = round((($InvValue/$CustomVal) * 280),2);
-					$DOCFEE = round((280 / $data['max_rows']), 2);
+					$DOCFEE = round((130 / $data['max_rows']), 2);
 				} else {
 					//$DOCFEE = 30 / $data['max_rows'];
 					//$DOCFEE = round((($InvValue/$CustomVal) * 30),2);
@@ -10197,7 +10198,7 @@ class PDF extends FPDF
 			if ($filterdate1 < $olddate && $filterdate1 != NULL && $filterdate1 != '') {
 				$DOCFEE = 265;
 			} else {
-				$DOCFEE = 280;
+				$DOCFEE = 130;
 			}
 		} else {
 			$DOCFEE;
@@ -10337,9 +10338,9 @@ class PDF extends FPDF
 		//}
 
 		if ($data['FIN_data']['MDec'] == 'IES') {
-			$LANDEDCOST = round(($DV_backpage + $CUD_AMOUNT + $BANKCHARGE + $BrokerFee2 + $wharfage + $arrastre + $DOCFEE2 + $IPF), 2);
+			$LANDEDCOST = ($DV_backpage + $CUD_AMOUNT + $BANKCHARGE + $BrokerFee2 + $wharfage + $arrastre + $DOCFEE2 + $IPF + $TAXAMT3);
 		} else {
-			$LANDEDCOST = round(($DV_backpage + $CUD_AMOUNT + $BANKCHARGE + $BrokerFee + $wharfage + $arrastre + $DOCFEE + $IPF), 2);
+			$LANDEDCOST = ($DV_backpage + $CUD_AMOUNT + $BANKCHARGE + $BrokerFee + $wharfage + $arrastre + $DOCFEE + $IPF + $TAXAMT3);
 		}
 		$this->SetXY(178, 28);
 		$this->SetFont('Arial', 'B', 9);
@@ -10360,11 +10361,12 @@ class PDF extends FPDF
 
 
 		if (isset($vat) && !empty($vat)) {
-			$TotalVat = $vat;
+			// $TotalVat = $vat;
+			$TotalVat = round(($LANDEDCOST * 0.12), 2);
 		} elseif ($vat == 0) {
 			if ($data['FIN_data']['Stat'] == 'C' || $data['FIN_data']['Stat'] == 'S') {
 				$TotalVat = round(($LANDEDCOST * 0.12), 2);
-				$avttax1New = $TAXAMT4 * 0.12;
+				// $avttax1New = $TAXAMT4 * 0.12;
 				$TotalVatNew = $avttax1New + $TotalVat;
 			} else {
 				$TotalVat = 0;
@@ -10838,8 +10840,9 @@ class PDF extends FPDF
 
 		/* Start EXC */
 
-		if ($TAXAMT3 == NULL) {
+		if ($TAXAMT3 == NULL || $TAXAMT3 == 0) {
 			$TAXAMT3 = NULL;
+			$TAXCODE3 = NULL;
 		} else {
 			$TAXAMT3 = number_format($TAXAMT3, 2);
 		}
@@ -10856,8 +10859,9 @@ class PDF extends FPDF
 
 		/* Start AVT */
 
-		if ($TAXAMT4 == NULL) {
+		if ($TAXAMT4 == NULL || $TAXAMT4 == 0) {
 			$TAXAMT4 = NULL;
+			$TAXCODE4 = NULL;
 		} else {
 			$TAXAMT4 = number_format($TAXAMT4, 2);
 		}
@@ -10910,8 +10914,9 @@ class PDF extends FPDF
 
 		/* Start DPD */
 
-		if ($TAXAMT7 == NULL) {
+		if ($TAXAMT7 == NULL || $TAXAMT7 == 0) {
 			$TAXAMT7 = NULL;
+			$TAXCODE7 = NULL;
 		} else {
 			$TAXAMT7 = number_format($TAXAMT7, 2);
 		}
@@ -10961,6 +10966,24 @@ class PDF extends FPDF
 		$this->Cell(60, 4, number_format($ITAX1, 2), 0, 0, 'R');
 
 		/* End Total Item Tax */
+
+		/* Start IPC */
+
+		if ($TAXAMT18 == NULL) {
+			$TAXAMT18 = NULL;
+		} else {
+			$TAXAMT18 = number_format($TAXAMT18, 2);
+		}
+
+		$this->SetXY(147, 242);
+		$this->SetFont('Arial', 'B', 9);
+		$this->Write(0, $TAXCODE18);
+
+		$this->SetXY(147, 240);
+		$this->SetFont('Arial', 'B', 9);
+		$this->Cell(60, 4, $TAXAMT18, 0, 0, 'R');
+
+		/* End IPC */
 
 		/* Start IPF */
 		if (($data['FIN_data']['MDec'] != 'IES' && $data['FIN_data']['MDec'] != '8ZN' && $data['FIN_data']['MDec'] != '8PP') && ($data['FIN_data']['Stat'] == 'C' || $data['FIN_data']['Stat'] == 'S')) {
@@ -11149,59 +11172,48 @@ class PDF extends FPDF
 
 		/* End CSF */
 
-		/* Start IPC */
-
-		if ($TAXAMT18 == NULL) {
-			$TAXAMT18 = NULL;
-		} else {
-			$TAXAMT18 = number_format($TAXAMT18, 2);
-		}
-
-		$this->SetXY(147, 256);
-		$this->SetFont('Arial', 'B', 9);
-		$this->Write(0, $TAXCODE18);
-
-		$this->SetXY(147, 254);
-		$this->SetFont('Arial', 'B', 9);
-		$this->Cell(60, 4, $TAXAMT18, 0, 0, 'R');
-
-		/* End IPC */
+		
 
 		/* Start CDS */
-		if ($data['FIN_data']['MDec'] != 'IES' && ($data['FIN_data']['Stat'] == 'C' || $data['FIN_data']['Stat'] == 'S')) {
-			// if (($data['FIN_data']['MDec'] != 'IES' && ($data['FIN_data']['MDec'] != 'IE' && $data['FIN_data']['Mdec2'] != '4')) && ($data['FIN_data']['Stat'] == 'C' || $data['FIN_data']['Stat'] == 'S')) {
-			if ($data['FIN_data']['MDec'] != 'IES' && $data['FIN_data']['MDec'] != 'IE') {
-				//06062024: SPagara: update 
+		//if ($data['FIN_data']['MDec'] != 'IES' && $data['FIN_data']['Stat'] == 'C' || $data['FIN_data']['Stat'] == 'S') {
+		if ($data['FIN_data']['MDec'] != 'IES' && $data['FIN_data']['Stat'] == 'C' || $data['FIN_data']['Stat'] == 'S') {
+		// if (($data['FIN_data']['MDec'] != 'IES' && ($data['FIN_data']['MDec'] != 'IE' && $data['FIN_data']['Mdec2'] != '4')) && ($data['FIN_data']['Stat'] == 'C' || $data['FIN_data']['Stat'] == 'S')) {
+			if ($data['FIN_data']['MDec'] != 'IES' && $data['FIN_data']['MDec'] != 'IE'){
+		//SPagara: 08072023: Update on charges
+		//05132024: SPagara: update 
+			$TAXCODE16 = "CDS";
+			//$TAXAMT16 = "250.00";
+			//$TAXAMT16 = "280.00";
+			$TAXAMT16 = "100.00";
+			}elseif ($data['FIN_data']['MDec'] = 'IED') {
 				$TAXCODE16 = "CDS";
 				//$TAXAMT16 = "250.00";
-				//$TAXAMT16 = "280.00";
 				$TAXAMT16 = "100.00";
-			} elseif ($data['FIN_data']['MDec'] = 'IED') {
-				$TAXCODE16 = "CDS";
-				//$TAXAMT16 = "250.00";
-				$TAXAMT16 = "100.00";
-			} else {
+			}else
+			{
 				$TAXCODE16 = "CDS";
 				$TAXAMT16 = "0.00";
 			}
-		} elseif ($data['FIN_data']['MDec'] == 'IES') {
+		}elseif ($data['FIN_data']['MDec'] == 'IES'){
 			$TAXCODE16 = "CDS";
 			$TAXAMT16 = "100.00";
-		} else {
+		}else{
 			if ($TAXAMT16 == NULL) {
-				$TAXAMT16 = NULL;
-			} else {
+				$TAXCODE16 = "CDS";
+				$TAXAMT16 = "100.00";
+			}else{
 				$TAXAMT16 = number_format($TAXAMT16, 2);
+				// $TAXAMT16 = number_format($TAXAMT16/$data['max_rows'], 2);
 			}
 		}
 
-		$this->SetXY(147, 274);
-		$this->SetFont('Arial', 'B', 9);
+		$this->SetXY(147, 260);
+		$this->SetFont('Arial','B',9);
 		$this->Write(0, $TAXCODE16);
 
-		$this->SetXY(147, 272);
-		$this->SetFont('Arial', 'B', 9);
-		$this->Cell(60, 4, $TAXAMT16, 0, 0, 'R');
+		$this->SetXY(147, 258);
+		$this->SetFont('Arial','B',9);
+		$this->Cell(60,4,$TAXAMT16,0,0,'R');
 
 		/* End CDS */
 
@@ -11209,21 +11221,22 @@ class PDF extends FPDF
 		if ($data['FIN_data']['Stat'] == 'C' || $data['FIN_data']['Stat'] == 'S') {
 			$TAXCODE17 = "IRS";
 			$TAXAMT17 = "30.00";
-		} else {
+		}else{
 			if ($TAXAMT17 == NULL) {
-				$TAXAMT17 = NULL;
-			} else {
+				$TAXCODE17 = "IRS";
+				$TAXAMT17 = "30.00";
+			}else{
 				$TAXAMT17 = number_format($TAXAMT17, 2);
 			}
 		}
 
-		$this->SetXY(147, 278);
-		$this->SetFont('Arial', 'B', 9);
+		$this->SetXY(147, 263);
+		$this->SetFont('Arial','B',9);
 		$this->Write(0, $TAXCODE17);
 
-		$this->SetXY(147, 276);
-		$this->SetFont('Arial', 'B', 9);
-		$this->Cell(60, 4, $TAXAMT17, 'B', 0, 'R');
+		$this->SetXY(147, 261);
+		$this->SetFont('Arial','B',9);
+		$this->Cell(60,4,$TAXAMT17,'B',0,'R');
 
 		/* End IRS */
 
@@ -11249,11 +11262,11 @@ class PDF extends FPDF
 		str_replace(',', '', $TAXAMT9) + */
 		$GTAX1 = str_replace(',', '', $TAXAMT8) + str_replace(',', '', $TAXAMT10) + str_replace(',', '', $TAXAMT11) + str_replace(',', '', $TAXAMT12) + str_replace(',', '', $TAXAMT13) + str_replace(',', '', $TAXAMT14) + str_replace(',', '', $TAXAMT15) + str_replace(',', '', $TAXAMT16) + str_replace(',', '', $TAXAMT17) + str_replace(',', '', $TAXAMT18) + str_replace(',', '', $TAXAMT19);
 
-		$this->SetXY(147, 280);
+		$this->SetXY(147, 265);
 		$this->SetFont('Arial', 'B', 9);
 		$this->Cell(60, 4, 'Total Global Tax', 'B', 0, 'L');
 
-		$this->SetXY(147, 280);
+		$this->SetXY(147, 265);
 		$this->SetFont('Arial', 'B', 9);
 		$this->Cell(60, 4, number_format($GTAX1, 2), 0, 0, 'R');
 
@@ -11263,7 +11276,7 @@ class PDF extends FPDF
 
 		$TTAX1 = $ITAX1 + $GTAX1;
 
-		$this->SetXY(147, 284);
+		$this->SetXY(147, 270);
 		$this->SetFont('Arial', 'B', 9);
 		$this->Cell(60, 4, number_format($TTAX1, 2), 0, 0, 'R');
 

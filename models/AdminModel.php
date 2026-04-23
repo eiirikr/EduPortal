@@ -102,6 +102,16 @@ class AdminModel extends DatabaseINSCUSADMIN
 
             $cltcode = $this->generateCltCode();
 
+            if (strlen($email) > 50) {
+            $results[] = [
+                'row'     => $rowNumber,
+                'status'  => 'error',
+                'field'   => 'email',
+                'message' => 'Email must not exceed 50 characters. Please shorten the email address.'
+            ];
+            continue;
+        }
+
             if ($this->isExistingUser($email, $cltcode)) {
                 $results[] = [
                     'row' => $rowNumber,
@@ -110,7 +120,6 @@ class AdminModel extends DatabaseINSCUSADMIN
                 ];
                 continue;
             }
-
             $default_password = $this->generateRandomString();
             $encrypted_password = $this->encryptPassword($default_password);
 

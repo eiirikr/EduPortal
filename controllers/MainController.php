@@ -298,6 +298,22 @@ class MainController
             isset($data['fin']) ? $data['fin'] : array()
         );
 
+        // Duplicate check for uncmptab (CONTIN / TIN)
+        $dec_tin = isset($data['master']['DecTin']) ? trim($data['master']['DecTin']) : '';
+
+        if (!empty($dec_tin)) {
+            $exists = $this->model->uncmptabExists($dec_tin);
+
+            if ($exists) {
+                $errors[] = [
+                    'item'       => 1,
+                    'field'      => 'tin',
+                    'error_code' => 2001,
+                    'error_desc' => "Invalid reference details. TIN {$dec_tin} already exists."
+                ];
+            }
+        }
+
         // TS Registry validation
         $registry = isset($baseData['Manifest']) ? trim($baseData['Manifest']) : '';
         $mdec2    = isset($data['master']['Mdec2']) ? strtoupper(trim($data['master']['Mdec2'])) : '';
@@ -585,40 +601,92 @@ class MainController
             }
 
             list($StudentNo, $firstName, $lastName, $address, $mobile, $email, $year, $section, $school, $account_type) = $row;
+            $email = trim($email);
 
             // Row validation
             if (empty($StudentNo)) {
                 $errors[] = ['message' => 'Student Number is required.', 'row' => $rowNum];
+            } elseif (strlen($StudentNo) > 50) {
+                $errors[] = [
+                    'message' => 'Invalid Student Number',
+                    'row' => $rowNum
+                ];
             }
             if (empty($firstName)) {
                 $errors[] = ['message' => 'First Name is required.', 'row' => $rowNum];
+            }  elseif (strlen($firstName) > 50) {
+                $errors[] = [
+                    'message' => 'Invalid First Name',
+                    'row' => $rowNum
+                ];
             }
             if (empty($lastName)) {
                 $errors[] = ['message' => 'Last Name is required.', 'row' => $rowNum];
+            }  elseif (strlen($lastName) > 50) {
+                $errors[] = [
+                    'message' => 'Invalid Last Name',
+                    'row' => $rowNum
+                ];
             }
             if (empty($address)) {
                 $errors[] = ['message' => 'Address is required.', 'row' => $rowNum];
-            }
-            if (empty($mobile) || !preg_match('/^[0-9]{7,15}$/', $mobile)) {
-                $errors[] = ['message' => 'Mobile No. must be numeric and at least 7 digits.', 'row' => $rowNum];
-            }
-            if (strlen($email) > 75) {
+            }  elseif (strlen($address) > 50) {
                 $errors[] = [
-                    'message' => 'Email must not exceed 75 characters.', 'row' => $rowNum];
-            } elseif (empty($email) || !filter_var(trim($email), FILTER_VALIDATE_EMAIL)) {
+                    'message' => 'Invalid Address',
+                    'row' => $rowNum
+                ];
+            }
+            if (empty($mobile)) {
+                $errors[] = ['message' => 'Mobile number is required.', 
+                'row' => $rowNum];
+            } elseif (empty($mobile) || !preg_match('/^[0-9]{7,15}$/', $mobile)) {
+                $errors[] = [
+                    'message' => 'Invalid mobile number. Please enter a valid number with 7 to 15 digits.',
+                    'row' => $rowNum
+                ];
+            }
+            if (empty($email)) {
+                $errors[] = ['message' => 'Email is required.', 'row' => $rowNum];
+
+            } elseif (strlen($email) > 50) {
+                $errors[] = [
+                    'message' => 'Email must not exceed 50 characters.',
+                    'row' => $rowNum
+                ];
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $errors[] = ['message' => 'Invalid Email format.', 'row' => $rowNum];
             }
             if (empty($year)) {
                 $errors[] = ['message' => 'Year is required.', 'row' => $rowNum];
+            } elseif (strlen($year) > 50) {
+                $errors[] = [
+                    'message' => 'Invalid Year',
+                    'row' => $rowNum
+                ];
             }
             if (empty($section)) {
                 $errors[] = ['message' => 'Section is required.', 'row' => $rowNum];
+            }  elseif (strlen($section) > 50) {
+                $errors[] = [
+                    'message' => 'Invalid Section',
+                    'row' => $rowNum
+                ];
             }
             if (empty($school)) {
                 $errors[] = ['message' => 'School is required.', 'row' => $rowNum];
+            }  elseif (strlen($school) > 50) {
+                $errors[] = [
+                    'message' => 'Invalid School',
+                    'row' => $rowNum
+                ];
             }
             if (empty($account_type)) {
                 $errors[] = ['message' => 'Account Type is required.', 'row' => $rowNum];
+            }  elseif (strlen($account_type) > 50) {
+                $errors[] = [
+                    'message' => 'Invalid Account Type',
+                    'row' => $rowNum
+                ];
             }
 
             $rows[] = $row;
@@ -637,7 +705,7 @@ class MainController
             $results = $this->admin_model->saveUploadedUserRows($rows);
 
             $errorRows = array_filter($results, function ($res) {
-                return isset($res['message']); // Only keep rows that have an error message
+                return isset($res['status']) && $res['status'] !== 'success';
             });
 
             if (!empty($errorRows)) {
@@ -715,7 +783,7 @@ class MainController
             $CUD                  += $item_cud;
 
             // Per-item VAT calculation
-            $doc_fee   = 280;
+            $doc_fee   = 130;
             $item_ipc  = 0;
             $item_bank = 0;
             if (empty($fin['WOBankCharge'])) {
@@ -883,7 +951,9 @@ class MainController
                 'VAT' => $item_vat,
                 'EXC' => $excise,
                 'FMF' => $fmf,
-                'AVT' => $MSP
+                'AVT' => $MSP,
+                'CDS' => '100.00',
+                'IRS' => '30.00'
             );
         }
 
@@ -935,14 +1005,14 @@ class MainController
 
         $wharfage = 0;
         $arrastre = 0;
-        $doc_fee  = 280;
-
+        $doc_fee  = 130;
         $landedcost = round(
-            $total_dutiable_value + $CUD + $bank_charge + $broker_fee + $wharfage + $arrastre + $doc_fee + $IPC,
+            $total_dutiable_value + $CUD + $bank_charge + $broker_fee + $wharfage + $arrastre + $doc_fee + $IPC + $total_exc,
             2
         );
         $vat        = round($landedcost * 0.12, 2);
 
+	
         // VAT adjustment: ensure sum(it_taxes[*]['VAT']) == $vat
         $vat_sum = 0;
         foreach ($it_taxes as $tx) {
@@ -962,7 +1032,9 @@ class MainController
             'VAT' => $vat,
             'EXC' => $total_exc,
             'FMF' => $total_fmf,
-            'AVT' => $total_avt
+            'AVT' => $total_avt,
+            'CDS' => '100.00',
+            'IRS' => '30.00'
         );
 
         return array(

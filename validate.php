@@ -31,45 +31,48 @@ if (empty($data)) {
 // validate data base on database validations
 $response = $controller->validateFields($data);
 
-// empty response indicates success application
-if (empty($response)) {
-    // update master status
-    $controller->updateMasterStatus($applno, 'AP');
-    // insert resp head data
-    $entry_details = $controller->insertRespHead($applno, $data, 'AP');
-
-    $data['entry_details'] = $entry_details;
-
-    // add data to tblapplstat
-    $controller->insertApplStat($applno);
-    // insert gbtanfan
-    $controller->insertTANFAN($applno, $entry_details);
-
-    // compute taxes
-    $taxes = $controller->getTaxes($data);
-    $total_assessment = 0;
-
-    if (!empty($taxes['gt_taxes'])) {
-        $controller->insertGTTaxes($applno,$taxes['gt_taxes']);
-
-        // compute for total assessment
-        foreach ($taxes['gt_taxes'] as $tax) {
-            $total_assessment += $tax;
-        }
-    }
-
-    if (!empty($taxes['it_taxes'])) {
-        $controller->insertITTaxes($applno,$taxes['it_taxes']);
-    }
-
-    // insert e2mdata ssdt
-    $data['total_assesment'] = $total_assessment;
-    $controller->insertSSDT($applno, $data);
-} else {
-    // update master status
+// ❗ HANDLE ERROR FIRST (AND STOP)
+if (!empty($response)) {
     $controller->updateMasterStatus($applno, 'ER');
     $controller->insertError($applno, $response);
+
+    echo '<h2 style="color:red;">Validation Error occurred. Please check logs.</h2>';
+
+    echo '<pre>';
+    print_r($response);
+    echo '</pre>';
+
+    exit; // CRITICAL
 }
+
+// ONLY SUCCESS FLOW CONTINUES
+$controller->updateMasterStatus($applno, 'AP');
+
+$entry_details = $controller->insertRespHead($applno, $data, 'AP');
+
+$data['entry_details'] = $entry_details;
+
+$controller->insertApplStat($applno);
+$controller->insertTANFAN($applno, $entry_details);
+
+$taxes = $controller->getTaxes($data);
+
+$total_assessment = 0;
+
+if (!empty($taxes['gt_taxes'])) {
+    $controller->insertGTTaxes($applno,$taxes['gt_taxes']);
+
+    foreach ($taxes['gt_taxes'] as $tax) {
+        $total_assessment += $tax;
+    }
+}
+
+if (!empty($taxes['it_taxes'])) {
+    $controller->insertITTaxes($applno,$taxes['it_taxes']);
+}
+
+$data['total_assesment'] = $total_assessment;
+$controller->insertSSDT($applno, $data);
 
 echo '<script type="text/javascript">';
 

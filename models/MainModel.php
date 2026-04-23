@@ -400,6 +400,7 @@ class MainModel extends Database
 
     public function insertGTTaxes($applno, $taxes)
     {
+     
         $now = new \DateTime();
         $now->setTimezone(new \DateTimeZone('Asia/Manila'));
         $datetime = $now->format('Y-m-d H:i:s');
@@ -578,5 +579,13 @@ class MainModel extends Database
     public function updateTSRow($registry, $data)
     {
         return $this->db->where('registry', $registry)->update('bol_manifest', $data);
+    }
+
+    public function uncmptabExists($contin)
+    {
+        $sql = "SELECT 1 FROM uncmptab WHERE CONTIN = ?";
+        $result = $this->db->select($sql, [$contin]);
+
+        return !empty($result);
     }
 }
